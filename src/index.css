@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   LOKAL DESIGN SYSTEM
+   Brand: Dark Teal (#1A7A7A) + Tangerine (#E8681A)
+   Font: Plus Jakarta Sans
+   ===================================================== */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans text-[#333333] bg-[#FAFAFA] antialiased;
+  }
+
+  * {
+    @apply box-border;
+  }
+}
+
+@layer components {
+
+  /* ---- BUTTONS ---- */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 bg-[#E8681A] hover:bg-[#C7551A] text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 cursor-pointer;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 bg-[#1A7A7A] hover:bg-[#155F5F] text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 cursor-pointer;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 border-2 border-[#1A7A7A] text-[#1A7A7A] hover:bg-[#1A7A7A] hover:text-white font-semibold px-6 py-3 rounded-xl transition-all duration-300 cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center gap-2 text-[#1A7A7A] hover:text-[#155F5F] font-semibold transition-colors duration-200 cursor-pointer;
+  }
+
+  .btn-portal {
+    @apply w-full flex items-center justify-center gap-3 bg-[#1A7A7A] hover:bg-[#155F5F] text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-300 shadow-md hover:shadow-xl hover:-translate-y-1 active:translate-y-0 text-base;
+  }
+
+  /* ---- CARDS ---- */
+  .product-card {
+    @apply bg-white rounded-2xl p-6 border border-[#1A7A7A]/10 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col gap-4;
+  }
+
+  .product-card-icon {
+    @apply w-12 h-12 rounded-xl bg-[#1A7A7A]/10 flex items-center justify-center text-[#1A7A7A] transition-all duration-300;
+  }
+
+  /* ---- SECTIONS ---- */
+  .section-container {
+    @apply max-w-6xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-24;
+  }
+
+  .section-title {
+    @apply text-3xl md:text-4xl font-extrabold text-[#1A7A7A] leading-tight;
+  }
+
+  .section-subtitle {
+    @apply text-lg md:text-xl text-[#333333] leading-relaxed;
+  }
+
+  /* ---- NAVBAR ---- */
+  .nav-link {
+    @apply text-[#333333] hover:text-[#1A7A7A] font-medium transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-[#E8681A] after:transition-all after:duration-300 hover:after:w-full pb-0.5;
+  }
+
+  /* ---- BADGE ---- */
+  .badge-coming-soon {
+    @apply inline-flex items-center gap-1.5 bg-[#E8681A]/10 text-[#E8681A] text-sm font-semibold px-4 py-1.5 rounded-full border border-[#E8681A]/20;
+  }
+
+  .badge-category {
+    @apply inline-flex items-center gap-1.5 bg-[#1A7A7A]/10 text-[#1A7A7A] text-sm font-semibold px-4 py-1.5 rounded-full;
+  }
+
+  /* ---- EXCLUSIVE FILTER BOX ---- */
+  .filter-box {
+    @apply bg-white border-l-4 border-[#E8681A] rounded-2xl p-6 md:p-8 shadow-md;
+  }
+
+  /* ---- FLOATING WA ---- */
+  .floating-wa {
+    @apply fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] hover:bg-[#1db954] text-white font-semibold px-5 py-3.5 rounded-full shadow-2xl hover:shadow-green-400/40 transition-all duration-300 hover:-translate-y-1 active:translate-y-0;
+  }
+
+  /* ---- DIVIDER ---- */
+  .divider {
+    @apply w-16 h-1 bg-[#E8681A] rounded-full;
+  }
+}
+
+@layer utilities {
+  .text-gradient-teal {
+    @apply bg-gradient-to-r from-[#1A7A7A] to-[#2fa8a7] bg-clip-text text-transparent;
+  }
+
+  .animate-delay-100 { animation-delay: 100ms; }
+  .animate-delay-200 { animation-delay: 200ms; }
+  .animate-delay-300 { animation-delay: 300ms; }
+  .animate-delay-400 { animation-delay: 400ms; }
+  .animate-delay-500 { animation-delay: 500ms; }
+
+  .opacity-0-init { opacity: 0; }
+}

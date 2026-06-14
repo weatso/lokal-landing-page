@@ -1,0 +1,52 @@
+# ══════════════════════════════════════════════
+#  LOKAL — Hostinger Apache Configuration
+#  SPA Routing + Security Headers
+# ══════════════════════════════════════════════
+
+Options -MultiViews -Indexes
+
+# ── SPA Routing: Redirect semua request ke index.html ──
+RewriteEngine On
+
+# Jangan redirect jika file/folder memang ada
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Semua route → index.html
+RewriteRule ^ /index.html [L,QSA]
+
+# ── Security Headers (Stealth + Protection) ──
+<IfModule mod_headers.c>
+  # Hapus signature server
+  Header unset X-Powered-By
+  Header always unset X-Powered-By
+
+  # Prevent clickjacking
+  Header always set X-Frame-Options "SAMEORIGIN"
+
+  # Prevent MIME sniffing
+  Header always set X-Content-Type-Options "nosniff"
+
+  # XSS Protection
+  Header always set X-XSS-Protection "1; mode=block"
+
+  # Referrer Policy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+  # Cache static assets aggressively
+  <FilesMatch "\.(js|css|png|jpg|jpeg|gif|webp|svg|woff2|woff|ttf|ico)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # HTML — no cache (selalu fresh)
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# ── Gzip Compression ──
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain text/html text/css
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml font/woff2
+</IfModule>
