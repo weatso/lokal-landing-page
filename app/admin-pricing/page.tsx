@@ -55,15 +55,15 @@ const DEFAULT = {
   'jasa-landing-page': {
     title: 'LOKAL Web Studio',
     basePrices: [
-      { id: 'landing-page', name: 'Landing Page 1 Halaman', price: 3000000, desc: 'Cocok untuk 1 produk spesifik / promosi.' },
-      { id: 'company-profile', name: 'Company Profile (Max 5 Halaman)', price: 5000000, desc: 'Untuk profil perusahaan dan multi-produk.' },
-      { id: 'ecommerce', name: 'Toko Online E-Commerce', price: 8000000, desc: 'Katalog produk dengan sistem checkout keranjang.' },
-      { id: 'custom', name: 'Custom Sesuai Keinginan', price: 0, desc: 'Fitur khusus (Sistem Web, SaaS, dll).' },
+      { id: 'landing-page', name: 'Landing Page 1 Halaman', prices: { '0.5': 1850000, '1': 2500000, '2': 4200000, '3': 5500000 }, desc: 'Website satu halaman yang fokus pada konversi produk tunggal atau promosi.' },
+      { id: 'company-profile', name: 'Company Profile (Max 3 Hal)', prices: { '0.5': 2500000, '1': 3500000, '2': 5800000, '3': 7700000 }, desc: 'Menampilkan profil bisnis, visi, misi, dan layanan secara elegan.' },
+      { id: 'katalog', name: 'Katalog Digital (Max 5 Hal)', prices: { '0.5': 3000000, '1': 4000000, '2': 6700000, '3': 8800000 }, desc: 'Katalog interaktif yang memanjakan mata, ideal untuk toko fisik.' },
     ],
     addons: [
-      { id: 'seo', name: 'Setup SEO & Analytics', price: 300000, type: 'flat' },
-      { id: 'copywriting', name: 'Full Custom Copywriting', price: 500000, type: 'flat' },
-      { id: 'extra-pages', name: 'Tambahan 5 Halaman Ekstra', price: 250000, type: 'flat' },
+      { id: 'gmaps', name: 'Integrasi Google My Business (Maps)', price: 250000, type: 'flat' },
+      { id: 'seo', name: 'Setup SEO Foundation & Meta Pixel', price: 300000, type: 'flat' },
+      { id: 'dashboard', name: 'Web Performance Dashboard', price: 750000, type: 'yearly' },
+      { id: 'extra-pages', name: 'Tambahan Halaman (Per Halaman)', price: 250000, type: 'flat' },
     ],
     promoCodes: []
   },
@@ -219,6 +219,22 @@ export default function AdminPricingPage() {
                       <input type="text" value={item.desc} placeholder="Deskripsi" className="flex-1 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
                         const newB = [...current.basePrices]; newB[idx].desc = e.target.value; handleChange('basePrices', newB)
                       }} />
+                    )}
+                    {item.prices !== undefined && (
+                      <div className="flex gap-2 w-full mt-2 lg:mt-0">
+                        <input type="number" value={item.prices['0.5']} placeholder="6Bln" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
+                          const newB = [...current.basePrices]; newB[idx].prices['0.5'] = Number(e.target.value); handleChange('basePrices', newB)
+                        }} />
+                        <input type="number" value={item.prices['1']} placeholder="1Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
+                          const newB = [...current.basePrices]; newB[idx].prices['1'] = Number(e.target.value); handleChange('basePrices', newB)
+                        }} />
+                        <input type="number" value={item.prices['2']} placeholder="2Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
+                          const newB = [...current.basePrices]; newB[idx].prices['2'] = Number(e.target.value); handleChange('basePrices', newB)
+                        }} />
+                        <input type="number" value={item.prices['3']} placeholder="3Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
+                          const newB = [...current.basePrices]; newB[idx].prices['3'] = Number(e.target.value); handleChange('basePrices', newB)
+                        }} />
+                      </div>
                     )}
                     {item.kontak !== undefined && (
                       <div className="flex gap-2">

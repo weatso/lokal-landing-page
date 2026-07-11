@@ -4,23 +4,23 @@ import { useState, useEffect } from 'react'
 import { CheckCircle2, ChevronDown, ChevronUp, Calculator } from 'lucide-react'
 
 const DURATION_OPTIONS = [
-  { value: 0.5, label: '6 Bulan',   discount: 0,  badge: '' },
-  { value: 1,   label: '1 Tahun',   discount: 40, badge: 'HEMAT 40%' },
-  { value: 2,   label: '2 Tahun',   discount: 50, badge: 'HEMAT 50%' },
-  { value: 3,   label: '3 Tahun',   discount: 60, badge: 'Paling Murah' },
+  { value: 0.5, label: '6 Bulan',   badge: '' },
+  { value: 1,   label: '1 Tahun',   badge: 'Rekomendasi' },
+  { value: 2,   label: '2 Tahun',   badge: 'Lebih Hemat' },
+  { value: 3,   label: '3 Tahun',   badge: 'Paling Murah' },
 ]
 
 const DEFAULT_BASE_PACKAGES = [
-  { id: 'landing-page', name: 'Landing Page 1 Halaman', pricePerYear: 3000000, desc: 'Cocok untuk 1 produk spesifik / promosi.' },
-  { id: 'company-profile', name: 'Company Profile (Max 5 Halaman)', pricePerYear: 5000000, desc: 'Untuk profil perusahaan dan multi-produk.' },
-  { id: 'ecommerce', name: 'Toko Online E-Commerce', pricePerYear: 8000000, desc: 'Katalog produk dengan sistem checkout keranjang.' },
-  { id: 'custom', name: 'Custom Sesuai Keinginan', pricePerYear: 0, desc: 'Fitur khusus (Sistem Web, SaaS, dll).' },
+  { id: 'landing-page', name: 'Landing Page 1 Halaman', prices: { '0.5': 1850000, '1': 2500000, '2': 4200000, '3': 5500000 }, desc: 'Website satu halaman yang fokus pada konversi produk tunggal atau promosi.' },
+  { id: 'company-profile', name: 'Company Profile (Max 3 Hal)', prices: { '0.5': 2500000, '1': 3500000, '2': 5800000, '3': 7700000 }, desc: 'Menampilkan profil bisnis, visi, misi, dan layanan secara elegan.' },
+  { id: 'katalog', name: 'Katalog Digital (Max 5 Hal)', prices: { '0.5': 3000000, '1': 4000000, '2': 6700000, '3': 8800000 }, desc: 'Katalog interaktif yang memanjakan mata, ideal untuk toko fisik.' },
 ]
 
 const DEFAULT_ADDONS = [
-  { id: 'seo', name: 'Setup SEO & Analytics', price: 300000, type: 'flat' },
-  { id: 'copywriting', name: 'Full Custom Copywriting', price: 500000, type: 'flat' },
-  { id: 'extra-pages', name: 'Tambahan 5 Halaman Ekstra', price: 250000, type: 'flat' },
+  { id: 'gmaps', name: 'Integrasi Google My Business (Maps)', price: 250000, type: 'flat' },
+  { id: 'seo', name: 'Setup SEO Foundation & Meta Pixel', price: 300000, type: 'flat' },
+  { id: 'dashboard', name: 'Web Performance Dashboard', price: 750000, type: 'yearly' },
+  { id: 'extra-pages', name: 'Tambahan Halaman (Per Halaman)', price: 250000, type: 'flat' },
 ]
 
 const fmt = (p: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(p)
@@ -34,6 +34,7 @@ export default function WebPricingCalculator() {
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   
   const [isAddonOpen, setIsAddonOpen] = useState(true)
+  const [extraPagesCount, setExtraPagesCount] = useState(1)
 
   useEffect(() => {
     const saved = localStorage.getItem('lokal_pricing_data')
@@ -44,7 +45,7 @@ export default function WebPricingCalculator() {
           const d = parsed['jasa-landing-page']
           if (d.basePrices && d.basePrices.length > 0) {
             setBasePackages(d.basePrices.map((b: any) => ({
-              id: b.id, name: b.name || b.area, pricePerYear: b.price, desc: b.desc || ''
+              id: b.id, name: b.name || b.area, prices: b.prices || { '0.5': 0, '1': 0, '2': 0, '3': 0 }, desc: b.desc || ''
             })))
             setBaseId(d.basePrices[0].id)
           }
@@ -62,32 +63,36 @@ export default function WebPricingCalculator() {
 
   // Calculate Prices
   const basePkg = basePackages.find(p => p.id === baseId) || basePackages[0]
-  const basePriceCalc = basePkg.pricePerYear * duration
+  const basePriceCalc = basePkg.prices ? (basePkg.prices[duration.toString() as keyof typeof basePkg.prices] || 0) : 0
+  
+  // Visual Decoy Logic: Anggap harga 6 bulan adalah harga "Normal" per 6 bulan
+  const decoyBasePrice = basePkg.prices ? (basePkg.prices['0.5'] || 0) : 0
+  const decoyMonthlyRate = decoyBasePrice / 6
+  const normalBasePriceCalc = duration > 0.5 ? (decoyMonthlyRate * (duration * 12)) : basePriceCalc
+  const discountAmount = normalBasePriceCalc - basePriceCalc
 
   const activeAddons = addons.filter(a => selectedAddons.includes(a.id))
   const addonsPriceCalc = activeAddons.reduce((sum, a) => {
-    if (a.type === 'yearly') return sum + (a.price * 12 * duration)
-    return sum + a.price
+    let aPrice = a.price
+    if (a.id === 'extra-pages') {
+      aPrice = a.price * extraPagesCount
+    }
+    if (a.type === 'yearly') return sum + (aPrice * duration)
+    return sum + aPrice
   }, 0)
 
-  const subtotal = basePriceCalc + addonsPriceCalc
-  const activeDiscount = DURATION_OPTIONS.find(d => d.value === duration)?.discount || 0
-  const discountAmount = subtotal * (activeDiscount / 100)
-  const total = subtotal - discountAmount
+  const total = basePriceCalc + addonsPriceCalc
 
   const monthlyEquivalent = total / (duration * 12)
 
   const handleCheckout = () => {
     const durLabel = DURATION_OPTIONS.find(d => d.value === duration)?.label
-    const addonNames = activeAddons.length > 0 ? activeAddons.map(a => a.name).join(', ') : 'Tanpa Add-on'
-    const msg = `Halo LOKAL, saya ingin memesan Website dengan rincian berikut:
-- Tipe: *${basePkg.name}*
-- Durasi: *${durLabel}*
-- Add-ons: *${addonNames}*
-
-Estimasi Total: *${fmt(total)}*
-
-Mohon panduannya untuk proses selanjutnya.`
+    const activeBase = basePackages.find(p => p.id === baseId)?.name
+    const addonText = activeAddons.map(a => {
+      if (a.id === 'extra-pages') return `- ${a.name} (${extraPagesCount}x)`
+      return `- ${a.name}`
+    }).join('%0A')
+    const msg = `Halo LOKAL, saya tertarik membuat website.%0A%0A*Paket:* ${activeBase}%0A*Durasi:* ${durLabel}%0A*Add-ons:*%0A${addonText || '- Tidak ada'}%0A%0A*Total Estimasi:* ${fmt(total)}%0A%0AMohon panduannya untuk proses selanjutnya.`
     
     window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'}?text=${encodeURIComponent(msg)}`, '_blank')
   }
@@ -100,13 +105,10 @@ Mohon panduannya untuk proses selanjutnya.`
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
-        {/* Left Column: Form Options */}
         <div className="lg:col-span-2 space-y-6">
-          
-          {/* 1. Base Package */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="font-bold text-xl text-gray-800 mb-4">1. Pilih Tipe Website</h3>
-            <div className="grid sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
               {basePackages.map(pkg => (
                 <div
                   key={pkg.id}
@@ -116,21 +118,14 @@ Mohon panduannya untuk proses selanjutnya.`
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h4 className="font-bold text-gray-800 text-sm leading-tight pr-2">{pkg.name}</h4>
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${baseId === pkg.id ? 'border-indigo-600 bg-indigo-600' : 'border-gray-300'}`}>
-                        {baseId === pkg.id && <div className="w-2 h-2 bg-white rounded-full" />}
-                      </div>
                     </div>
                     <p className="text-xs text-gray-500 mb-3">{pkg.desc}</p>
-                  </div>
-                  <div className="text-xs font-bold text-indigo-700 bg-white/50 inline-block px-2 py-1 rounded">
-                    {pkg.pricePerYear > 0 ? `${fmt(pkg.pricePerYear)}/thn` : 'Harga Menyesuaikan'}
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 2. Duration */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="font-bold text-xl text-gray-800 mb-4">2. Pilih Durasi Hosting/Sistem</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -141,18 +136,16 @@ Mohon panduannya untuk proses selanjutnya.`
                   className={`cursor-pointer rounded-xl p-4 text-center border-2 transition-all relative ${duration === opt.value ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-100 hover:border-indigo-200'}`}
                 >
                   {opt.badge && (
-                    <div className={`absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap ${opt.discount >= 50 ? 'bg-red-600 animate-pulse' : 'bg-red-500'}`}>
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm whitespace-nowrap bg-indigo-500">
                       {opt.badge}
                     </div>
                   )}
                   <h4 className={`font-bold ${duration === opt.value ? 'text-indigo-700' : 'text-gray-800'}`}>{opt.label}</h4>
-                  <div className="text-[10px] text-gray-500 mt-1">Sudah termasuk Maintenance</div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* 3. Add-ons */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <div 
               className="flex justify-between items-center cursor-pointer" 
@@ -172,27 +165,34 @@ Mohon panduannya untuk proses selanjutnya.`
                 {addons.map(addon => (
                   <div
                     key={addon.id}
-                    onClick={() => toggleAddon(addon.id)}
-                    className={`cursor-pointer rounded-xl p-4 border-2 transition-all flex items-start gap-3 ${selectedAddons.includes(addon.id) ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-100 hover:border-indigo-200'}`}
+                    className={`cursor-pointer flex flex-col justify-between p-4 rounded-xl border-2 transition-all ${selectedAddons.includes(addon.id) ? 'border-indigo-600 bg-indigo-50/50' : 'border-gray-100 hover:border-indigo-200'}`}
                   >
-                    <div className={`mt-0.5 shrink-0 text-indigo-600 ${selectedAddons.includes(addon.id) ? 'opacity-100' : 'opacity-20'}`}>
-                      <CheckCircle2 size={20} />
+                    <div onClick={() => toggleAddon(addon.id)} className="flex items-start gap-3 h-full">
+                      <div className={`mt-0.5 rounded-full flex-shrink-0 ${selectedAddons.includes(addon.id) ? 'text-indigo-600' : 'text-gray-300'}`}>
+                        <CheckCircle2 size={24} className={selectedAddons.includes(addon.id) ? "fill-indigo-100" : ""} />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="font-bold text-gray-800 leading-tight mb-1">{addon.name}</h4>
+                        <p className="text-sm text-gray-500 font-medium">{fmt(addon.price)} {addon.type === 'yearly' ? '/ Tahun' : '(Sekali Bayar)'}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-gray-800 text-sm mb-1">{addon.name}</h4>
-                      <p className="text-xs text-indigo-600 font-semibold">
-                        +{fmt(addon.price)} {addon.type === 'yearly' ? '/bln' : '(sekali bayar)'}
-                      </p>
-                    </div>
+                    {addon.id === 'extra-pages' && selectedAddons.includes(addon.id) && (
+                      <div className="mt-3 pl-9 flex items-center gap-3">
+                        <span className="text-sm font-bold text-gray-700">Jumlah:</span>
+                        <div className="flex items-center bg-white border border-gray-200 rounded-lg overflow-hidden">
+                          <button onClick={(e) => { e.stopPropagation(); setExtraPagesCount(Math.max(1, extraPagesCount - 1)) }} className="px-3 py-1 hover:bg-gray-100 font-bold">-</button>
+                          <span className="px-3 py-1 font-bold text-indigo-700">{extraPagesCount}</span>
+                          <button onClick={(e) => { e.stopPropagation(); setExtraPagesCount(extraPagesCount + 1) }} className="px-3 py-1 hover:bg-gray-100 font-bold">+</button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
             )}
           </div>
-
         </div>
 
-        {/* Right Column: Receipt */}
         <div className="lg:col-span-1 sticky top-28">
           <div className="bg-[#0f2e2e] text-white rounded-3xl p-8 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-10">
@@ -202,31 +202,36 @@ Mohon panduannya untuk proses selanjutnya.`
             <h3 className="text-xl font-bold mb-6 text-white/90 relative z-10">Ringkasan Biaya</h3>
             
             <div className="space-y-4 mb-8 relative z-10 text-sm text-white/80">
-              <div className="flex justify-between">
-                <span className="w-3/5 truncate pr-2">{basePkg.name}</span>
-                <span className="font-semibold text-white">{basePriceCalc > 0 ? fmt(basePriceCalc) : 'Konsultasi'}</span>
+              <div className="flex justify-between items-end">
+                <span className="text-sm text-gray-300 font-medium">Harga Paket:</span>
+                <div className="text-right">
+                  {duration > 0.5 && discountAmount > 0 && (
+                    <div className="text-xs text-red-400 line-through mb-1">{fmt(normalBasePriceCalc)}</div>
+                  )}
+                  <div className="text-2xl font-bold text-white tracking-tight">{fmt(basePriceCalc)}</div>
+                </div>
               </div>
               
               {activeAddons.map(a => (
-                <div key={a.id} className="flex justify-between">
-                  <span className="w-3/5 truncate pr-2 text-indigo-300">+ {a.name}</span>
+                <div key={a.id} className="flex justify-between items-center text-sm border-t border-white/10 pt-3">
+                  <span className="w-3/5 truncate pr-2 text-indigo-300">+ {a.name} {a.id === 'extra-pages' ? `(${extraPagesCount}x)` : ''}</span>
                   <span className="font-semibold text-indigo-200">
-                    {fmt(a.type === 'yearly' ? (a.price * 12 * duration) : a.price)}
+                    {fmt(a.type === 'yearly' ? (a.price * duration) : (a.id === 'extra-pages' ? a.price * extraPagesCount : a.price))}
                   </span>
                 </div>
               ))}
 
               <div className="border-t border-white/20 my-4" />
 
-              <div className="flex justify-between">
-                <span>Subtotal ({duration * 12} bulan)</span>
-                <span>{fmt(subtotal)}</span>
+              <div className="flex justify-between font-bold">
+                <span>Total Estimasi ({duration * 12} bulan)</span>
+                <span>{fmt(total)}</span>
               </div>
-
-              {activeDiscount > 0 && (
-                <div className="flex justify-between text-green-400 font-bold">
-                  <span>Diskon {activeDiscount}%</span>
-                  <span>-{fmt(discountAmount)}</span>
+              
+              {duration > 0.5 && discountAmount > 0 && (
+                <div className="flex justify-between items-center text-green-400 text-xs font-bold mt-3 bg-green-400/10 p-3 rounded-lg border border-green-400/20">
+                  <span>✨ Anda Hemat</span>
+                  <span className="text-sm">{fmt(discountAmount)}</span>
                 </div>
               )}
             </div>

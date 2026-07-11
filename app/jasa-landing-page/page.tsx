@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Layout, PenTool, Smartphone, Globe, Zap, CheckCircle2 } from 'lucide-react'
+import { Layout, PenTool, Smartphone, Globe, Zap, CheckCircle2, FileText, RefreshCw, MessageCircle, Video, ShieldCheck } from 'lucide-react'
 import Image from 'next/image'
 
 export const metadata: Metadata = {
@@ -118,7 +118,49 @@ export default function JasaLandingPage() {
         </section>
 
         {/* Pricing Calculator */}
-        <WebPricingCalculator />
+        <section id="pricing">
+          <WebPricingCalculator />
+        </section>
+
+        {/* SLA & Cara Kerja */}
+        <section className="max-w-6xl mx-auto px-4 mt-24 mb-12">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">SLA & Ketentuan Layanan</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Dengan menggunakan layanan LOKAL Web Studio, Anda menyetujui standar kerja berikut untuk memastikan kualitas dan kecepatan *delivery* project Anda.</p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center mb-4"><FileText size={20} /></div>
+              <h3 className="font-bold text-gray-800 mb-2">Brief & Materi Klien</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Klien wajib memberikan materi (teks/info) yang jelas. Desain, layout, dan struktur visual adalah otoritas penuh tim LOKAL demi standar kualitas terbaik.</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="w-10 h-10 bg-rose-50 text-rose-600 rounded-lg flex items-center justify-center mb-4"><RefreshCw size={20} /></div>
+              <h3 className="font-bold text-gray-800 mb-2">Kebijakan Revisi</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Kami memberikan 1x revisi minor (ubah teks, warna, atau ganti foto). Kami tidak melayani perombakan ulang layout setelah desain pertama dikirim.</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center mb-4"><MessageCircle size={20} /></div>
+              <h3 className="font-bold text-gray-800 mb-2">Sistem Click-to-WA</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Seluruh web LOKAL murni menggunakan Click-to-WhatsApp (CTWA). Kami tidak menyediakan formulir database/Google Sheets untuk cegah spam.</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+              <div className="w-10 h-10 bg-red-50 text-red-600 rounded-lg flex items-center justify-center mb-4"><Video size={20} /></div>
+              <h3 className="font-bold text-gray-800 mb-2">Video via YouTube</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Untuk menjaga kecepatan load web tetap di atas rata-rata, semua video wajib menggunakan sistem *embed* YouTube (bukan di-hosting langsung).</p>
+            </div>
+            
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm md:col-span-2 lg:col-span-2">
+              <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center mb-4"><ShieldCheck size={20} /></div>
+              <h3 className="font-bold text-gray-800 mb-2">Bebas Pusing (Fully Maintained)</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">Biaya tahunan sudah mencakup perpanjangan domain, hosting, dan keamanan SSL. Kami menjamin web Anda aktif 99.9% tanpa perlu Anda urus teknisnya sedikitpun.</p>
+            </div>
+          </div>
+        </section>
 
       </main>
     </div>
