@@ -10,6 +10,7 @@ interface ProductCardProps {
   ctaLabel: string
   href: string
   cover?: boolean
+  isCollab?: boolean
 }
 
 export default function ProductCard({
@@ -20,6 +21,7 @@ export default function ProductCard({
   ctaLabel,
   href,
   cover = false,
+  isCollab = false,
 }: ProductCardProps) {
   return (
     <div className="bg-white rounded-2xl p-5 md:p-6 border border-[#1A7A7A]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row items-center gap-6 group">

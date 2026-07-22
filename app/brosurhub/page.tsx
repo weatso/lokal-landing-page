@@ -42,7 +42,7 @@ export default function BrosurHubPage() {
   const handleConsultation = (paket = '') => {
     const promoText = appliedPromo ? ` (Kode Promo: ${appliedPromo}, Diskon ${promoDiscount}%)` : ''
     const msg = `Halo LOKAL, saya tertarik membuat brosur digital dengan ${paket || 'jasa BrosurHub'}${promoText}. Mohon info selengkapnya.`
-    window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank')
+    window.open(`https://wa.me/6285111326098?text=${msg}`, '_blank')
   }
 
   return (

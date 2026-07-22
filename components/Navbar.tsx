@@ -4,19 +4,22 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, ChevronDown } from 'lucide-react'
 
-const navLinks = [
+const internalLinks = [
   { label: 'Beranda',            href: '/' },
+  { label: 'Kasir F&B',          href: '/pos-fnb' },
   { label: 'Bikin Website',      href: '/jasa-landing-page' },
-  { label: 'Kasir F&B',         href: '/pos-fnb' },
-  { label: 'Cuci Mobil',        href: '/iwash' },
-  { label: 'Valet',             href: '/valet-indonesia' },
-  { label: 'Brosur Digital',    href: '/brosurhub' },
-  { label: 'WA Blast',          href: '/wa-blast' },
 ]
 
-const WA_NUMBER  = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'
+const collabLinks = [
+  { label: 'Cuci Mobil (iWash)', href: '/iwash' },
+  { label: 'Sistem Valet',       href: '/valet-indonesia' },
+  { label: 'Brosur Digital',     href: '/brosurhub' },
+  { label: 'WA Blast',           href: '/wa-blast' },
+]
+
+const WA_NUMBER  = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 const WA_MESSAGE = 'Halo LOKAL, saya ingin tahu lebih lanjut tentang solusi untuk bisnis saya.'
 
 export default function Navbar() {
@@ -57,7 +60,7 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
+            {internalLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -68,6 +71,20 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+            
+            {/* Dropdown Kolaborasi */}
+            <div className="relative group">
+              <button className="flex items-center gap-1 nav-link text-sm font-medium py-2">
+                Produk Kolaborasi <ChevronDown size={14} className="group-hover:rotate-180 transition-transform" />
+              </button>
+              <div className="absolute top-full left-0 mt-0 w-48 bg-white border border-gray-100 rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 py-2">
+                {collabLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="block px-4 py-2 text-sm text-gray-700 hover:bg-[#1A7A7A]/5 hover:text-[#1A7A7A]">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* CTA Desktop */}
@@ -92,8 +109,9 @@ export default function Navbar() {
 
         {/* Mobile Menu */}
         {isOpen && (
-          <div className="md:hidden bg-white border-t border-[#1A7A7A]/10 py-4 px-2 shadow-lg rounded-b-2xl">
-            {navLinks.map((link) => (
+          <div className="md:hidden bg-white border-t border-[#1A7A7A]/10 py-4 px-2 shadow-lg rounded-b-2xl h-[calc(100vh-4rem)] overflow-y-auto">
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 py-2 mt-2">Layanan Utama</div>
+            {internalLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -106,14 +124,32 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary w-full mt-4 justify-center text-sm"
-            >
-              Konsultasi via WhatsApp
-            </a>
+            
+            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider px-4 py-2 mt-4">Produk Kolaborasi</div>
+            {collabLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`block py-3 px-4 rounded-xl font-medium transition-colors ${
+                  pathname === link.href
+                    ? 'bg-[#1A7A7A]/10 text-[#1A7A7A]'
+                    : 'text-[#333333] hover:bg-[#1A7A7A]/5 hover:text-[#1A7A7A]'
+                }`}
+              >
+                {link.label}
+              </Link>
+            ))}
+            
+            <div className="mt-4 px-4 pb-10">
+              <a
+                href={waLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary w-full mt-4 justify-center text-sm"
+              >
+                Konsultasi via WhatsApp
+              </a>
+            </div>
           </div>
         )}
       </nav>

@@ -44,7 +44,7 @@ export default function ValetIndonesiaPage() {
   const handleConsultation = (paket = '') => {
     const promoText = appliedPromo ? ` (Kode Promo: ${appliedPromo}, Diskon ${promoDiscount}%)` : ''
     const msg = `Halo LOKAL, saya tertarik dengan ${paket || 'sistem Valet Indonesia'}${promoText}. Mohon info cara berlangganan dan pembayarannya.`
-    window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank')
+    window.open(`https://wa.me/6285111326098?text=${msg}`, '_blank')
   }
 
   const CHECKMARK = (

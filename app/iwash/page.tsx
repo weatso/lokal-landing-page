@@ -56,7 +56,7 @@ export default function IwashPage() {
   const handleConsultation = (paket = '') => {
     const promoText = appliedPromo ? ` (Kode Promo: ${appliedPromo}, Diskon ${promoDiscount}%)` : ''
     const msg = `Halo LOKAL, saya tertarik dengan paket ${paket || 'sistem iWash'}${promoText}. Mohon info cara pendaftarannya.`
-    window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank')
+    window.open(`https://wa.me/6285111326098?text=${msg}`, '_blank')
   }
 
   return (

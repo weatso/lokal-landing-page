@@ -58,7 +58,7 @@ export default function WaBlastPage() {
 
   const handleConsultation = (paket = '') => {
     const msg = `Halo LOKAL, saya tertarik dengan layanan WA Blasting${paket ? ` mengenai ${paket}` : ''}. Mohon info selengkapnya.`
-    window.open(`https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`, '_blank')
+    window.open(`https://wa.me/6285111326098?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
   return (

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 const fmt = (p: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(p)
 
-const WA = '6281234567890'
+const WA = '6285111326098'
 
 const features = [
   { Icon: PenTool,    bg: 'bg-indigo-100', color: 'text-indigo-600', title: 'Custom & Premium Design', desc: 'Desain dibuat khusus menyesuaikan identitas brand Anda, bukan sekadar menggunakan template pasaran yang kaku.' },

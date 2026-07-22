@@ -1,370 +1,442 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import {
-  ArrowRight,
-  CheckCircle2,
-  Store,
-  Clock,
-  ShieldCheck,
-  Smartphone,
-  Check
+  CheckCircle2, ShieldCheck, Zap, Users, BarChart2,
+  Package, Coffee, Clock, Printer, MessageSquare,
+  Star, ChevronDown, ChevronUp, Cpu, Wifi, WifiOff,
+  ArrowRight, Layers, Building2, UserCheck, PieChart,
+  Heart, Tv2, Vibrate, HardDrive, Info
 } from 'lucide-react'
-import Image from 'next/image'
+import Link from 'next/link'
 import PromoCodeInput from '@/components/PromoCodeInput'
 
-// ── Types ──────────────────────────────────────────────────────
-interface BasePrice { id: string; area: string; price: number }
-interface Addon     { id: string; name: string; price: number }
+// ─── Types ────────────────────────────────────────────────────────────────────
+interface Addon     { id: string; name: string; price: number; oneTime?: boolean }
 interface PromoCode { id: string; code: string; discount: number; isActive: boolean }
 
 interface PricingData {
-  basePrices:  BasePrice[]
-  addons:      Addon[]
-  discount6m:  number
+  basePrices: { id: string; area: string; price: number }[]
+  addons: Addon[]
+  discount6m: number
   discount12m: number
-  promoCodes:  PromoCode[]
+  promoCodes: PromoCode[]
 }
 
+// ─── Default data (matches /api/pricing defaults) ────────────────────────────
 const DEFAULT: PricingData = {
-  basePrices:  [
-    { id: '1', area: 'Semarang (LOKAL Area)', price: 75000 },
-    { id: '2', area: 'Belitung (LOKAL Area)', price: 75000 },
-    { id: '3', area: 'Luar Daerah (Nasional)', price: 99000 },
+  basePrices: [
+    { id: 'core', area: 'CORE ENGINE', price: 50000 },
   ],
-  addons:      [
-    { id: 'a1', name: 'Laporan Keuangan', price: 20000 },
-    { id: 'a2', name: 'Sistem Penggajian (Payroll)', price: 15000 },
-    { id: 'a3', name: 'Manajemen Meja', price: 15000 },
-    { id: 'a4', name: 'Jasa Setting Hardware (Sekali Bayar)', price: 50000 },
-    { id: 'a5', name: 'Tambahan Cabang', price: 50000 },
-  ],
-  discount6m:  10,
+  addons: [],
+  discount6m: 10,
   discount12m: 20,
-  promoCodes:  [{ id: 'p1', code: 'LOKALPOS', discount: 15, isActive: true }],
+  promoCodes: [],
 }
 
-const fmt = (price: number) =>
-  new Intl.NumberFormat('id-ID', {
-    style:                 'currency',
-    currency:              'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(price)
+// ─── Static add-on catalogue (modular) ───────────────────────────────────────
+const ADDON_CATALOGUE = [
+  // Scale
+  { id: 'extra-branch', category: 'Skala & Multi-Outlet', name: 'Tambah Cabang Ekstra', price: 0, dynamic: true, icon: Building2, color: 'text-purple-500 bg-purple-50', desc: 'Cabang baru otomatis mewarisi semua fitur yang sudah aktif di Cabang Utama.' },
+  // F&B & Retail
+  { id: 'meja-qr', category: 'Layanan F&B', name: 'Manajemen Meja & QR Menu', price: 50000, icon: Coffee, color: 'text-orange-500 bg-orange-50', desc: 'QR per meja, pengunjung lihat menu dari HP, pesanan masuk real-time ke kasir.' },
+  { id: 'stok-premium', category: 'Layanan F&B', name: 'Stok Premium & Oversell Prevention', price: 35000, icon: Package, color: 'text-red-500 bg-red-50', desc: 'Tombol kasir otomatis dikunci jika stok 0. Indikator warna dan notifikasi restock.' },
+  // Staff & Finance
+  { id: 'payroll', category: 'Staf & Keuangan', name: 'Absensi & Payroll', price: 75000, icon: UserCheck, color: 'text-emerald-500 bg-emerald-50', desc: 'Pelacakan jam kerja, hitung gaji pokok + tunjangan, dan slip gaji digital.' },
+  { id: 'keuangan', category: 'Staf & Keuangan', name: 'Dashboard Keuangan', price: 75000, icon: PieChart, color: 'text-blue-500 bg-blue-50', desc: 'Laporan Laba/Rugi riil, terpisah dari rekap omzet kotor harian.' },
+  // Retention
+  { id: 'crm', category: 'Retensi', name: 'CRM Pelanggan & Loyalty', price: 45000, icon: Heart, color: 'text-pink-500 bg-pink-50', desc: 'Profil pelanggan via WA, riwayat transaksi, poin loyalitas, dan diskon member.' },
+  { id: 'pager-digital', category: 'Retensi', name: 'Digital Pager / Layar Antrean', price: 25000, icon: Tv2, color: 'text-cyan-500 bg-cyan-50', desc: 'Modul pemanggilan pesanan visual untuk Smart TV di area pick-up.' },
+  // One-time
+  { id: 'pager-fisik', category: 'One-Time', name: 'Integrasi Pager Fisik', price: 350000, oneTime: true, icon: Vibrate, color: 'text-gray-500 bg-gray-100', desc: 'Sambungkan sistem antrean ke perangkat pager fisik (bergetar/menyala). Mulai dari harga ini.' },
+  { id: 'migrasi', category: 'One-Time', name: 'Jasa Migrasi & Setup Hardware', price: 500000, oneTime: true, icon: HardDrive, color: 'text-indigo-500 bg-indigo-50', desc: 'Tim kami pindahkan data menu & stok dari Excel/POS lama, termasuk setup printer.' },
+]
 
-const CHECKMARK = (
-  <svg width="8" height="6" viewBox="0 0 8 6" fill="none">
-    <path d="M1 3l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-  </svg>
-)
+const DURATION_OPTS = [
+  { value: 1,  label: 'Bulanan',  badge: '' },
+  { value: 6,  label: '6 Bulan',  badge: 'Hemat 10%' },
+  { value: 12, label: '1 Tahun',  badge: 'Hemat 20%' },
+]
+
+const fmt = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
+
+const CORE_FEATURES = [
+  { icon: WifiOff,       title: 'Kasir Offline-First',          desc: 'Tetap proses pesanan saat internet mati. Sinkronisasi otomatis saat online kembali.' },
+  { icon: Printer,       title: 'Hybrid Receipt (Fisik & WA)',   desc: 'Cetak nota termal 58mm/80mm via Bluetooth, sekaligus kirim struk digital ke WA pelanggan.' },
+  { icon: BarChart2,     title: 'Rekap Harian & Audit Transaksi', desc: 'Laporan pendapatan, total transaksi, kas masuk, dan kas keluar tercatat otomatis.' },
+  { icon: ShieldCheck,   title: 'Security Log Anti-Maling',      desc: 'Setiap Void, hapus item, atau buka laci tanpa transaksi tercatat di log aktivitas dashboard.' },
+  { icon: Users,         title: 'Akses Komunitas LOKAL (B2B)',   desc: 'Hak eksklusif owner bergabung di ekosistem bisnis LOKAL.' },
+]
+
+const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 
 export default function PosFnbPage() {
-  const [pricing, setPricing]           = useState<PricingData>(DEFAULT)
-  const [selectedBase, setSelectedBase] = useState<string>(DEFAULT.basePrices[0].id)
-  const [addons, setAddons]             = useState<string[]>([])
-  const [promoDiscount, setPromoDiscount]       = useState(0)
-  const [appliedPromo, setAppliedPromo]         = useState('')
+  const [pricing, setPricing]             = useState<PricingData>(DEFAULT)
+  const [duration, setDuration]           = useState(12)
+  const [selectedAddons, setSelectedAddons] = useState<string[]>([])
+  const [promoDiscount, setPromoDiscount] = useState(0)
+  const [appliedPromo, setAppliedPromo]   = useState('')
+  const [openCategory, setOpenCategory]   = useState<string | null>('Layanan F&B')
 
+  // Load from API
   useEffect(() => {
-    const saved = localStorage.getItem('lokal_pricing_data')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Record<string, PricingData>
-        if (parsed['pos-fnb']) {
-          const d = parsed['pos-fnb']
-          if (!d.promoCodes) d.promoCodes = DEFAULT.promoCodes
+    fetch('/api/pricing')
+      .then(r => r.json())
+      .then(json => {
+        const d = json?.data?.['pos-fnb']
+        if (d) {
+          if (!d.promoCodes) d.promoCodes = []
           if (d.discount6m  === undefined) d.discount6m  = 10
           if (d.discount12m === undefined) d.discount12m = 20
           setPricing(d)
-          if (d.basePrices?.length) setSelectedBase(d.basePrices[0].id)
         }
-      } catch { /* use defaults */ }
-    }
+      })
+      .catch(() => {})
   }, [])
 
-  const toggleAddon = (id: string) =>
-    setAddons(prev => prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id])
-
-  const base       = pricing.basePrices.find(b => b.id === selectedBase) ?? pricing.basePrices[0] ?? { price: 0, area: '' }
-  const addonTotal = addons.reduce((sum, id) => {
-    const a = pricing.addons.find(x => x.id === id)
-    return sum + (a?.price ?? 0)
-  }, 0)
-  const total = base.price + addonTotal
-
-  const handleConsultation = (duration: number, totalPay: number) => {
-    const addonNames = addons.map(id => pricing.addons.find(a => a.id === id)?.name).filter(Boolean).join(', ')
-    const promoText  = appliedPromo ? `%0A*Kode Promo:* ${appliedPromo} (Diskon ${promoDiscount}%)` : ''
-    const msg = `Halo LOKAL, saya tertarik berlangganan LOKAL POS F%26B.%0A%0A*Area:* ${base.area}%0A*Add-ons:* ${addonNames || 'Tidak ada'}%0A*Durasi:* ${duration} Bulan%0A*Total Pembayaran:* ${fmt(totalPay)}${promoText}.%0A%0AMohon panduannya.`
-    window.open(`https://wa.me/6281234567890?text=${msg}`, '_blank')
+  const toggleAddon = (id: string) => {
+    setSelectedAddons(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    )
   }
 
-  const packageFeatures = ['Kasir & Pencatatan Pesanan', 'Rekap Harian (Shift)', 'Dukungan Teknis LOKAL']
-  const d6m  = pricing.discount6m  ?? 0
-  const d12m = pricing.discount12m ?? 0
-  const p1m  = total * (1 - promoDiscount / 100)
-  const p6m  = total * (1 - d6m  / 100) * (1 - promoDiscount / 100)
-  const p12m = total * (1 - d12m / 100) * (1 - promoDiscount / 100)
+  // Billing calc
+  const discountPct = duration === 6 ? (pricing.discount6m || 10) : duration === 12 ? (pricing.discount12m || 20) : 0
+  const coreMonthly = pricing.basePrices[0]?.price ?? 50000
+
+  const monthlyAddons = useMemo(() =>
+    selectedAddons.reduce((sum, id) => {
+      const a = ADDON_CATALOGUE.find(x => x.id === id)
+      if (!a || a.oneTime) return sum
+      return sum + a.price
+    }, 0)
+  , [selectedAddons])
+
+  const oneTimeAddons = useMemo(() =>
+    selectedAddons.reduce((sum, id) => {
+      const a = ADDON_CATALOGUE.find(x => x.id === id)
+      if (!a || !a.oneTime) return sum
+      return sum + a.price
+    }, 0)
+  , [selectedAddons])
+
+  // Extra branch = 75% of total monthly (core + recurring add-ons)
+  const extraBranchCount = selectedAddons.includes('extra-branch') ? 1 : 0
+  const baseMonthly = coreMonthly + monthlyAddons
+  const extraBranchPrice = Math.round(baseMonthly * 0.75)
+  const totalMonthly = baseMonthly + (extraBranchCount * extraBranchPrice)
+  const discountedMonthly = Math.round(totalMonthly * (1 - discountPct / 100))
+  const totalPeriod = discountedMonthly * duration
+  const promoAmount = Math.round(totalPeriod * (promoDiscount / 100))
+  const finalTotal = totalPeriod - promoAmount + oneTimeAddons
+
+  const waMsg = encodeURIComponent(
+    `Halo LOKAL! Saya tertarik dengan LOKAL POS F&B.\n\nPilihan saya:\n- Durasi: ${DURATION_OPTS.find(d => d.value === duration)?.label}\n- Add-ons: ${selectedAddons.length > 0 ? selectedAddons.map(id => ADDON_CATALOGUE.find(a => a.id === id)?.name).join(', ') : 'Tidak ada'}\n- Estimasi: ${fmt(finalTotal)}\n\nBoleh minta info lebih lanjut?`
+  )
+
+  // Group addons by category
+  const categories = Array.from(new Set(ADDON_CATALOGUE.map(a => a.category)))
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] font-sans text-[#333333] flex flex-col selection:bg-[#E8681A] selection:text-white">
-      <main className="flex-grow pt-24 pb-16">
+    <div className="min-h-screen font-sans bg-[#FAFAFA]">
 
-        {/* Hero */}
-        <section className="px-4 mb-20 relative">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#1A7A7A]/10 blur-[100px] rounded-full pointer-events-none" />
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
-            <div className="text-left">
-              <div className="mb-6 inline-block bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-produk/lokal-pos.webp" alt="LOKAL POS F&B" className="h-8 object-contain" />
-              </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                Tinggalkan Cara Lama.<br />
-                <span className="text-[#1A7A7A]">Kelola Resto Lebih Modern.</span>
-              </h1>
-              <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
-                Kunci laci kasir Anda dan pantau resto dari mana saja. Sistem kasir cerdas tanpa alat mahal, cukup pakai tablet atau HP android yang sudah ada. Staf baru bisa lancar pakai dalam 3 menit.
-              </p>
-              <a href="#pricing" className="bg-[#1A7A7A] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#135c5c] transition shadow-lg shadow-[#1A7A7A]/30 inline-flex items-center gap-2">
-                Hitung Harga Paket <ArrowRight size={20} />
-              </a>
-            </div>
-
-            {/* Illustration */}
-            <div className="relative">
-              <div className="aspect-[4/3] bg-white rounded-3xl shadow-2xl border border-gray-100 p-6 flex flex-col relative">
-                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
-                  <div className="flex gap-2">
-                    <div className="w-3 h-3 rounded-full bg-red-400" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                    <div className="w-3 h-3 rounded-full bg-green-400" />
-                  </div>
-                  <div className="bg-gray-100 px-3 py-1 rounded text-xs font-bold text-gray-500">Kasir Utama</div>
-                </div>
-                <div className="flex gap-6 h-full">
-                  <div className="flex-1 grid grid-cols-2 gap-3">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="bg-gray-50 rounded-xl border border-gray-100 p-3 flex flex-col justify-between">
-                        <div className="w-10 h-10 bg-gray-200 rounded-lg mb-2" />
-                        <div>
-                          <div className="w-16 h-3 bg-gray-300 rounded mb-1" />
-                          <div className="w-10 h-3 bg-[#E8681A]/50 rounded" />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="w-1/3 bg-gray-50 rounded-xl border border-gray-100 p-4 flex flex-col">
-                    <div className="font-bold text-sm mb-4">Order #1042</div>
-                    <div className="flex-1 space-y-3">
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">Nasi Goreng</span><span className="font-semibold">25k</span></div>
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">Es Teh</span><span className="font-semibold">5k</span></div>
-                    </div>
-                    <div className="pt-3 border-t border-gray-200 mt-auto">
-                      <div className="flex justify-between text-sm font-bold mb-3"><span>Total</span><span className="text-[#1A7A7A]">30k</span></div>
-                      <div className="w-full py-2 bg-[#E8681A] rounded-lg text-white text-xs font-bold text-center">Bayar</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="absolute -right-4 top-1/4 bg-white p-3 rounded-xl shadow-xl border border-gray-100 flex items-center gap-3 animate-[bounce_4s_infinite]">
-                  <div className="bg-green-100 text-green-600 p-2 rounded-lg"><CheckCircle2 size={16} /></div>
-                  <div>
-                    <div className="text-xs text-gray-500">Pesanan Baru</div>
-                    <div className="text-sm font-bold">Meja 04</div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* ── HERO ─────────────────────────────────────────────────────────── */}
+      <section className="relative bg-gradient-to-br from-[#0d2d2d] via-[#0f3d3d] to-[#1A7A7A] text-white pt-28 pb-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-[#E8681A]/10 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 left-1/4 w-72 h-72 bg-[#1A7A7A]/20 rounded-full blur-[100px]" />
+        </div>
+        <div className="max-w-4xl mx-auto text-center relative">
+          <div className="inline-flex items-center gap-2 bg-[#E8681A]/20 border border-[#E8681A]/40 text-[#E8681A] text-xs font-bold px-4 py-2 rounded-full mb-6 uppercase tracking-wider">
+            <Cpu size={13} /> LOKAL POS F&B
           </div>
-        </section>
-
-        {/* Features */}
-        <section className="max-w-6xl mx-auto px-4 mb-24">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Fitur Andalan Resto Modern</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Kami merancang sistem ini untuk menyelesaikan masalah klasik di bisnis kuliner. Tanpa ribet, langsung pakai.</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-5">
+            Sistem Kasir <span className="text-[#E8681A]">Tanpa Batas</span> untuk Resto & Kafe Anda
+          </h1>
+          <p className="text-white/70 text-lg max-w-2xl mx-auto mb-8">
+            Dari Rp 50.000/bulan. Ditagih tahunan. Pilih hanya fitur yang Anda butuhkan — bayar sesuai skala bisnis Anda.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a
+              href="#pricing"
+              className="bg-[#E8681A] hover:bg-[#c95914] text-white font-bold px-8 py-4 rounded-xl transition shadow-xl shadow-[#E8681A]/30 flex items-center gap-2"
+            >
+              Hitung Harga Saya <ArrowRight size={18} />
+            </a>
+            <a
+              href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Halo LOKAL, saya ingin konsultasi tentang POS F&B.')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="border border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 rounded-xl transition flex items-center gap-2"
+            >
+              <MessageSquare size={18} /> Konsultasi Gratis
+            </a>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { Icon: Store,      color: '[#1A7A7A]', bg: '[#1A7A7A]/10', title: 'Pencatatan Instan',    desc: 'Mencegah pesanan terlewat saat jam ramai. Klik menu, otomatis masuk ke dapur.' },
-              { Icon: Clock,      color: '[#E8681A]', bg: '[#E8681A]/10', title: 'Stok Real-time',       desc: 'Ketahui bahan baku yang hampir habis sebelum benar-benar kehabisan.' },
-              { Icon: ShieldCheck,color: 'green-600', bg: 'green-100',    title: 'Anti-Fraud & Laporan', desc: 'Rekap otomatis tiap pergantian shift kasir. Mencegah selisih uang dan kecurangan.' },
-              { Icon: Smartphone, color: 'blue-600',  bg: 'blue-100',     title: 'Zero Hardware Cost',  desc: 'Bisa pakai HP atau tablet Android yang sudah Anda miliki. Sambungkan ke printer bluetooth murah.' },
-            ].map(({ Icon, color, bg, title, desc }) => (
-              <div key={title} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group">
-                <div className={`w-12 h-12 bg-${bg} text-${color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition`}>
-                  <Icon size={24} />
+        </div>
+      </section>
+
+      {/* ── CORE FEATURES ────────────────────────────────────────────────── */}
+      <section className="bg-white py-20 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-14">
+            <div className="inline-flex items-center gap-2 bg-[#1A7A7A]/10 text-[#1A7A7A] text-xs font-bold px-4 py-2 rounded-full mb-4 uppercase tracking-wider">
+              <Star size={13} /> Sudah Termasuk di Paket Core
+            </div>
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-3">
+              Satu Paket, Lima Kekuatan Utama
+            </h2>
+            <p className="text-gray-500 max-w-xl mx-auto">
+              CORE ENGINE Rp 50.000/bln sudah mencakup semua ini. Tidak ada biaya tersembunyi.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {CORE_FEATURES.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="bg-[#FAFAFA] rounded-2xl p-6 border border-[#1A7A7A]/10 hover:border-[#1A7A7A]/30 hover:shadow-md transition-all">
+                <div className="w-11 h-11 bg-[#1A7A7A]/10 rounded-xl flex items-center justify-center mb-4">
+                  <Icon size={22} className="text-[#1A7A7A]" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">{title}</h3>
-                <p className="text-gray-600 text-sm leading-relaxed">{desc}</p>
+                <h3 className="font-bold text-gray-800 mb-2">{title}</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">{desc}</p>
               </div>
             ))}
+            {/* Bonus card */}
+            <div className="bg-[#E8681A]/5 rounded-2xl p-6 border border-[#E8681A]/20 flex flex-col justify-center">
+              <div className="w-11 h-11 bg-[#E8681A]/15 rounded-xl flex items-center justify-center mb-4">
+                <Layers size={22} className="text-[#E8681A]" />
+              </div>
+              <h3 className="font-bold text-gray-800 mb-2">Ekosistem Modular</h3>
+              <p className="text-sm text-gray-500 leading-relaxed">Tambah fitur kapan saja sesuai kebutuhan bisnis yang berkembang — tanpa ganti sistem.</p>
+            </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Pricing Calculator */}
-        <section id="pricing" className="max-w-5xl mx-auto px-4 mb-24">
-          <div className="text-center mb-10">
-            <div className="inline-block bg-[#E8681A]/10 text-[#E8681A] px-3 py-1 rounded-full text-xs font-bold tracking-wider mb-4">KALKULATOR BIAYA</div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Sistem Fleksibel. Bayar Sesuai Kebutuhan.</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">LOKAL POS F&B menggunakan model <strong>Basic + Add-ons</strong>. Pilih area Anda dan centang fitur ekstra yang Anda butuhkan.</p>
+      {/* ── PRICING CALCULATOR ───────────────────────────────────────────── */}
+      <section id="pricing" className="py-20 px-4 bg-[#F0F7F7]">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-extrabold text-gray-900 mb-3">Bangun Paket Anda Sendiri</h2>
+            <p className="text-gray-500">Bayar hanya untuk yang Anda butuhkan. Estimasi harga langsung di sini.</p>
           </div>
 
-          <div className="bg-[#1A7A7A] rounded-3xl overflow-hidden shadow-2xl">
-            <div className="grid md:grid-cols-2">
-              {/* Base price */}
-              <div className="p-8 md:p-10 text-white flex flex-col border-b md:border-b-0 md:border-r border-white/10">
-                <h3 className="font-bold text-xl mb-2">1. Pilih Area Anda</h3>
-                <p className="text-white/70 text-sm mb-6">Pilih paket dasar sesuai lokasi operasional bisnis Anda.</p>
-                <div className="space-y-3">
-                  {pricing.basePrices.map(item => (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelectedBase(item.id)}
-                      className={`flex justify-between items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                        selectedBase === item.id ? 'bg-white text-[#1A7A7A] border-white shadow-lg scale-[1.02]' : 'bg-white/10 text-white border-white/20 hover:bg-white/20'
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            {/* ─ Left: configurator */}
+            <div className="lg:col-span-3 space-y-6">
+
+              {/* Duration */}
+              <div className="bg-white rounded-2xl border border-gray-200 p-6">
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2"><Clock size={18} className="text-[#1A7A7A]" /> Durasi Berlangganan</h3>
+                <div className="grid grid-cols-3 gap-3">
+                  {DURATION_OPTS.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setDuration(opt.value)}
+                      className={`relative rounded-xl p-3 text-center border-2 transition-all ${
+                        duration === opt.value
+                          ? 'border-[#1A7A7A] bg-[#1A7A7A]/5 text-[#1A7A7A]'
+                          : 'border-gray-200 text-gray-600 hover:border-gray-300'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${selectedBase === item.id ? 'border-[#1A7A7A]' : 'border-white/50'}`}>
-                          {selectedBase === item.id && <div className="w-2.5 h-2.5 rounded-full bg-[#1A7A7A]" />}
-                        </div>
-                        <span className="font-semibold">{item.area}</span>
-                      </div>
-                      <span className="font-bold text-lg">{fmt(item.price)}</span>
-                    </div>
+                      {opt.badge && (
+                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 bg-[#E8681A] text-white text-[9px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap">
+                          {opt.badge}
+                        </span>
+                      )}
+                      <div className="font-bold text-sm">{opt.label}</div>
+                    </button>
                   ))}
                 </div>
               </div>
 
-              {/* Addons */}
-              <div className="bg-white p-8 md:p-10 flex flex-col">
-                <h3 className="text-xl font-bold mb-2">2. Pilih Add-ons (Opsional)</h3>
-                <p className="text-gray-500 text-sm mb-6">Centang fitur tambahan yang ingin diaktifkan.</p>
-                <div className="space-y-3 mb-8 flex-1">
-                  {pricing.addons.map(addon => (
-                    <div
-                      key={addon.id}
-                      onClick={() => toggleAddon(addon.id)}
-                      className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all group ${
-                        addons.includes(addon.id) ? 'bg-[#E8681A]/5 border-[#E8681A]' : 'bg-gray-50 border-transparent hover:border-gray-200 hover:bg-gray-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-6 h-6 rounded flex items-center justify-center transition-colors border ${
-                          addons.includes(addon.id) ? 'bg-[#E8681A] border-[#E8681A] text-white' : 'bg-white border-gray-300 text-transparent'
-                        }`}>
-                          <Check size={14} strokeWidth={3} />
-                        </div>
-                        <span className={`font-semibold ${addons.includes(addon.id) ? 'text-[#E8681A]' : 'text-gray-700'}`}>{addon.name}</span>
-                      </div>
-                      <span className={`font-bold ${addons.includes(addon.id) ? 'text-[#E8681A]' : 'text-gray-900'}`}>+{fmt(addon.price)}</span>
+              {/* Core (always selected) */}
+              <div className="bg-white rounded-2xl border-2 border-[#1A7A7A] p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#1A7A7A]/10 rounded-xl flex items-center justify-center">
+                      <Cpu size={20} className="text-[#1A7A7A]" />
                     </div>
-                  ))}
+                    <div>
+                      <div className="font-bold text-gray-900">CORE ENGINE</div>
+                      <div className="text-xs text-gray-500">Wajib · 1 Cabang Utama termasuk</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-[#1A7A7A]">{fmt(coreMonthly)}<span className="text-xs text-gray-400 font-normal">/bln</span></div>
+                    <div className="text-[10px] text-gray-400">{fmt(coreMonthly * 12)}/tahun</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Add-ons by category */}
+              {categories.map(cat => {
+                const items = ADDON_CATALOGUE.filter(a => a.category === cat)
+                const isOpen = openCategory === cat
+                return (
+                  <div key={cat} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+                    <button
+                      className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition"
+                      onClick={() => setOpenCategory(isOpen ? null : cat)}
+                    >
+                      <span className="font-bold text-gray-800 text-sm">{cat}</span>
+                      {isOpen ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                    </button>
+                    {isOpen && (
+                      <div className="border-t border-gray-100 divide-y divide-gray-50">
+                        {items.map(addon => {
+                          const isSelected = selectedAddons.includes(addon.id)
+                          const isExtraBranch = addon.id === 'extra-branch'
+                          const displayPrice = isExtraBranch ? extraBranchPrice : addon.price
+                          return (
+                            <div
+                              key={addon.id}
+                              onClick={() => toggleAddon(addon.id)}
+                              className={`flex items-start gap-4 p-4 cursor-pointer transition-colors ${isSelected ? 'bg-[#1A7A7A]/5' : 'hover:bg-gray-50'}`}
+                            >
+                              <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-[#1A7A7A] border-[#1A7A7A]' : 'border-gray-300'}`}>
+                                {isSelected && <svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <span className="font-semibold text-sm text-gray-800">{addon.name}</span>
+                                    {addon.oneTime && (
+                                      <span className="ml-2 text-[10px] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded font-bold">SEKALI BAYAR</span>
+                                    )}
+                                    {isExtraBranch && (
+                                      <span className="ml-2 text-[10px] bg-purple-100 text-purple-600 px-1.5 py-0.5 rounded font-bold">DINAMIS</span>
+                                    )}
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <div className="font-bold text-sm text-[#1A7A7A]">
+                                      {isExtraBranch && selectedAddons.length === 0
+                                        ? <span className="text-gray-400 text-xs italic">Pilih add-on dulu</span>
+                                        : <>{fmt(displayPrice)}<span className="text-xs text-gray-400 font-normal">{addon.oneTime ? '' : '/bln'}</span></>
+                                      }
+                                    </div>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{addon.desc}</p>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* ─ Right: summary */}
+            <div className="lg:col-span-2">
+              <div className="sticky top-24 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+                <div className="bg-gradient-to-br from-[#0d2d2d] to-[#1A7A7A] text-white p-5">
+                  <div className="text-sm text-white/70 mb-1">Estimasi Total Anda</div>
+                  <div className="text-3xl font-extrabold">{fmt(finalTotal)}</div>
+                  {duration > 1 && <div className="text-xs text-white/60 mt-1">untuk {duration} bulan · hemat {discountPct}%</div>}
+                </div>
+
+                <div className="p-5 space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">CORE ENGINE × {duration}bln</span>
+                    <span className="font-semibold">{fmt(coreMonthly * duration)}</span>
+                  </div>
+                  {selectedAddons.filter(id => {
+                    const a = ADDON_CATALOGUE.find(x => x.id === id); return a && !a.oneTime
+                  }).map(id => {
+                    const a = ADDON_CATALOGUE.find(x => x.id === id)!
+                    const price = id === 'extra-branch' ? extraBranchPrice : a.price
+                    return (
+                      <div key={id} className="flex justify-between text-sm">
+                        <span className="text-gray-500 truncate mr-2">{a.name} × {duration}bln</span>
+                        <span className="font-semibold shrink-0">{fmt(price * duration)}</span>
+                      </div>
+                    )
+                  })}
+                  {oneTimeAddons > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-500">Jasa/Perangkat (sekali)</span>
+                      <span className="font-semibold">{fmt(oneTimeAddons)}</span>
+                    </div>
+                  )}
+                  {discountPct > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600">
+                      <span>Diskon {discountPct}%</span>
+                      <span>-{fmt(Math.round((totalMonthly * duration) * discountPct / 100))}</span>
+                    </div>
+                  )}
+
+                  {/* Promo */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <PromoCodeInput
+                      promoCodes={pricing.promoCodes}
+                      onApply={(discount, code) => { setPromoDiscount(discount); setAppliedPromo(code) }}
+                      onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
+                    />
+                  </div>
+
+                  {promoDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-emerald-600">
+                      <span>Kode promo ({appliedPromo})</span>
+                      <span>-{fmt(promoAmount)}</span>
+                    </div>
+                  )}
+
+                  <div className="flex justify-between font-extrabold text-lg pt-2 border-t-2 border-gray-100">
+                    <span>Total</span>
+                    <span className="text-[#1A7A7A]">{fmt(finalTotal)}</span>
+                  </div>
+
+                  <a
+                    href={`https://wa.me/${WA_NUMBER}?text=${waMsg}`}
+                    target="_blank" rel="noopener noreferrer"
+                    className="block w-full text-center bg-[#E8681A] hover:bg-[#c95914] text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-[#E8681A]/25 mt-2"
+                  >
+                    Mulai Berlangganan
+                  </a>
+
+                  <p className="text-center text-xs text-gray-400 mt-2">
+                    Harga bersifat estimasi. Tim kami akan konfirmasi sebelum penagihan.
+                  </p>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Promo Code */}
-          <div className="max-w-xl mx-auto mt-10 mb-4">
-            <PromoCodeInput
-              promoCodes={pricing.promoCodes}
-              onApply={(discount, code) => { setPromoDiscount(discount); setAppliedPromo(code) }}
-              onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
-            />
-          </div>
-
-          {/* Package cards */}
-          <div className="grid md:grid-cols-3 gap-6 mt-12">
-            {/* 1 Month */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col relative">
-              <h3 className="text-lg font-bold text-gray-800 mb-1">Paket 1 Bulan</h3>
-              <p className="text-sm text-gray-500 mb-6">Cocok untuk mencoba sistem.</p>
-              <div className="mb-8">
-                {promoDiscount > 0 && <div className="text-sm text-gray-400 line-through mb-1">{fmt(total)}</div>}
-                <div className={`text-3xl font-black ${promoDiscount > 0 ? 'text-green-600' : 'text-gray-900'}`}>{fmt(p1m)}</div>
-                <div className="text-sm text-gray-500 mt-1">/ bulan</div>
+      {/* ── TRUST / FAQ STRIP ────────────────────────────────────────────── */}
+      <section className="bg-white py-14 px-4 border-t border-gray-100">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          {[
+            { icon: Zap, title: 'Setup dalam 1 Hari', desc: 'Tim LOKAL siapkan semuanya. Anda tinggal buka toko.' },
+            { icon: Wifi, title: 'Tanpa Kontrak Panjang', desc: 'Berhenti kapan saja. Tidak ada penalti atau biaya tersembunyi.' },
+            { icon: ShieldCheck, title: 'Data Anda, Milik Anda', desc: 'Semua data transaksi tersimpan aman dan bisa dieksport kapan saja.' },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="flex flex-col items-center gap-3 p-6 rounded-2xl bg-[#FAFAFA] border border-gray-100">
+              <div className="w-12 h-12 bg-[#1A7A7A]/10 rounded-xl flex items-center justify-center">
+                <Icon size={22} className="text-[#1A7A7A]" />
               </div>
-              <ul className="flex-1 space-y-3 mb-6">
-                {packageFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center shrink-0 mt-0.5">{CHECKMARK}</div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-6 border-t border-gray-100 mt-auto">
-                <div className="flex justify-between text-sm mb-4"><span className="text-gray-500">Total Bayar:</span><span className="font-bold">{fmt(p1m)}</span></div>
-                <button onClick={() => handleConsultation(1, p1m)} className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">Pilih 1 Bulan</button>
-              </div>
+              <h3 className="font-bold text-gray-800">{title}</h3>
+              <p className="text-sm text-gray-500">{desc}</p>
             </div>
+          ))}
+        </div>
+      </section>
 
-            {/* 6 Months */}
-            <div className="bg-white rounded-3xl p-8 border-2 border-[#1A7A7A] shadow-xl flex flex-col relative transform md:-translate-y-4">
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1A7A7A] text-white px-4 py-1 rounded-full text-xs font-bold tracking-wider whitespace-nowrap">PILIHAN POPULER</div>
-              <h3 className="text-lg font-bold text-gray-800 mb-1">Paket 6 Bulan</h3>
-              <p className="text-sm text-gray-500 mb-6">Pilihan cerdas untuk kestabilan.</p>
-              <div className="mb-8">
-                {(d6m > 0 || promoDiscount > 0) && <div className="text-sm text-gray-400 line-through mb-1">{fmt(total)}</div>}
-                <div className="text-3xl font-black text-[#1A7A7A]">{fmt(p6m)}</div>
-                <div className="text-sm text-gray-500 mt-1">/ bulan</div>
-              </div>
-              <ul className="flex-1 space-y-3 mb-6">
-                {packageFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-[#1A7A7A]/10 text-[#1A7A7A] flex items-center justify-center shrink-0 mt-0.5">{CHECKMARK}</div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-6 border-t border-gray-100 mt-auto">
-                <div className="flex justify-between text-sm mb-4"><span className="text-gray-500">Total Bayar:</span><span className="font-bold">{fmt(p6m * 6)}</span></div>
-                <button onClick={() => handleConsultation(6, p6m * 6)} className="w-full bg-[#1A7A7A] text-white py-3 rounded-xl font-bold hover:bg-[#135c5c] transition shadow-lg shadow-[#1A7A7A]/30">Pilih 6 Bulan</button>
-              </div>
-            </div>
-
-            {/* 12 Months */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col relative">
-              <div className="absolute top-0 right-8 -translate-y-1/2 bg-[#E8681A] text-white px-3 py-1 rounded-lg text-xs font-bold whitespace-nowrap">BEST VALUE</div>
-              <h3 className="text-lg font-bold text-gray-800 mb-1">Paket 1 Tahun</h3>
-              <p className="text-sm text-gray-500 mb-6">Investasi terbaik, bebas repot.</p>
-              <div className="mb-8">
-                {(d12m > 0 || promoDiscount > 0) && <div className="text-sm text-gray-400 line-through mb-1">{fmt(total)}</div>}
-                <div className="text-3xl font-black text-gray-900">{fmt(p12m)}</div>
-                <div className="text-sm text-gray-500 mt-1">/ bulan</div>
-              </div>
-              <ul className="flex-1 space-y-3 mb-6">
-                {packageFeatures.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-[#E8681A]/10 text-[#E8681A] flex items-center justify-center shrink-0 mt-0.5">{CHECKMARK}</div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-6 border-t border-gray-100 mt-auto">
-                <div className="flex justify-between text-sm mb-4"><span className="text-gray-500">Total Bayar:</span><span className="font-bold">{fmt(p12m * 12)}</span></div>
-                <button onClick={() => handleConsultation(12, p12m * 12)} className="w-full bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition">Pilih 1 Tahun</button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* SEO Article */}
-        <section className="max-w-4xl mx-auto px-4 mt-10 border-t border-gray-200 pt-16">
-          <article className="prose prose-gray prose-a:text-[#1A7A7A] max-w-none">
-            <h2 className="text-2xl font-bold mb-6">Mengapa Bisnis F&B Wajib Menggunakan Sistem POS Modern?</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              Dalam era digital saat ini, persaingan bisnis kuliner (Food and Beverage) semakin ketat. Mengandalkan metode pencatatan manual di buku kasir bukan lagi pilihan yang ideal.
-            </p>
-            <h3 className="text-xl font-bold mt-8 mb-4">Keuntungan Cloud POS untuk UMKM</h3>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              Sistem kasir berbasis cloud, seperti <strong>LOKAL POS F&B</strong>, hadir sebagai solusi tepat guna untuk UMKM. Berbeda dengan mesin kasir tradisional, Cloud POS memungkinkan pemilik bisnis menggunakan perangkat yang sudah ada <em>(zero hardware cost)</em>.
-            </p>
-          </article>
-        </section>
-
-      </main>
+      {/* ── FINAL CTA ────────────────────────────────────────────────────── */}
+      <section className="bg-gradient-to-br from-[#0d2d2d] to-[#1A7A7A] py-20 px-4 text-white text-center">
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-3xl font-extrabold mb-4">Mulai Gratis, Tanpa Risiko</h2>
+          <p className="text-white/70 mb-8">Konsultasikan kebutuhan operasional Anda dengan tim LOKAL. Kami bantu pilihkan paket yang paling efisien untuk bisnis Anda.</p>
+          <a
+            href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent('Halo LOKAL! Saya ingin coba LOKAL POS F&B untuk bisnis saya.')}`}
+            target="_blank" rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-[#E8681A] hover:bg-[#c95914] text-white font-bold px-10 py-4 rounded-xl transition shadow-xl shadow-[#E8681A]/30"
+          >
+            <MessageSquare size={20} /> Hubungi Kami via WhatsApp
+          </a>
+        </div>
+      </section>
     </div>
   )
 }

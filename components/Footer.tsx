@@ -1,23 +1,26 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { MapPin, Phone, AtSign } from 'lucide-react'
+import { MapPin, Phone, Instagram } from 'lucide-react'
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'
+const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 
-const productLinks = [
-  { label: 'LOKAL POS F&B',          href: '/pos-fnb' },
+const internalLinks = [
+  { label: 'LOKAL POS F&B',     href: '/pos-fnb' },
+  { label: 'Jasa Landing Page', href: '/jasa-landing-page' },
+]
+
+const collabLinks = [
   { label: 'LOKAL x Iwash',          href: '/iwash' },
   { label: 'LOKAL x ValetIndonesia', href: '/valet-indonesia' },
   { label: 'LOKAL x BrosurHub',      href: '/brosurhub' },
   { label: 'WA Blast',               href: '/wa-blast' },
-  { label: 'Jasa Landing Page',      href: '/jasa-landing-page' },
 ]
 
 export default function Footer() {
   return (
     <footer className="bg-[#0a2626] text-white">
       <div className="section-container py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
           {/* Brand */}
           <div className="flex flex-col gap-4">
@@ -35,15 +38,32 @@ export default function Footer() {
             <p className="text-[#E8681A] font-semibold text-sm">#pakailokalaja</p>
           </div>
 
-          {/* Products */}
+          {/* Internal Products */}
           <div>
-            <h4 className="font-bold text-white mb-4">Produk Kami</h4>
+            <h4 className="font-bold text-white mb-4">Layanan LOKAL</h4>
             <ul className="flex flex-col gap-2">
-              {productLinks.map((link) => (
+              {internalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
                     className="text-white/60 hover:text-[#E8681A] text-sm transition-colors duration-200"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Collab Products */}
+          <div>
+            <h4 className="font-bold text-white mb-4">Produk Kolaborasi</h4>
+            <ul className="flex flex-col gap-2">
+              {collabLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="flex items-center gap-2 text-white/60 hover:text-[#E8681A] text-sm transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -69,12 +89,12 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://instagram.com/pakailokalaja"
+                  href="https://www.instagram.com/pakailokalaja?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 text-white/60 hover:text-pink-400 text-sm transition-colors duration-200"
                 >
-                  <AtSign size={15} />
+                  <Instagram size={15} />
                   @pakailokalaja
                 </a>
               </li>

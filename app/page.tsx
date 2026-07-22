@@ -14,17 +14,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 }
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'
+const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 
 const products = [
-  {
-    logo: '/logo-produk/lokal-web.webp',
-    title: 'LOKAL Web Studio',
-    description:
-      'Pembuatan website / landing page profesional, cepat, dan berorientasi pada konversi penjualan. Terima beres termasuk copywriting dan hosting.',
-    ctaLabel: 'Bikin Website Sekarang',
-    href: '/jasa-landing-page',
-  },
   {
     logo: '/logo-produk/lokal-pos.webp',
     title: 'LOKAL POS F&B',
@@ -34,12 +26,21 @@ const products = [
     href: '/pos-fnb',
   },
   {
+    logo: '/logo-produk/lokal-web.webp',
+    title: 'LOKAL Web Studio',
+    description:
+      'Pembuatan website / landing page profesional, cepat, dan berorientasi pada konversi penjualan. Terima beres termasuk copywriting dan hosting.',
+    ctaLabel: 'Bikin Website Sekarang',
+    href: '/jasa-landing-page',
+  },
+  {
     logo: '/logo-produk/i-wash.png',
     title: 'LOKAL x Iwash',
     description:
       'Lacak antrean kendaraan yang masuk dan biarkan sistem menghitung pembagian komisi karyawan Anda secara presisi setiap akhir shift.',
     ctaLabel: 'Atur Cuci Mobil',
     href: '/iwash',
+    isCollab: true,
   },
   {
     logo: '/logo-produk/valet-indonesia.png',
@@ -48,6 +49,7 @@ const products = [
       'Tinggalkan tiket kertas. Berikan pengalaman premium dengan sistem serah-terima dan pelacakan karcis kendaraan digital via WhatsApp.',
     ctaLabel: 'Digitalisasi Valet',
     href: '/valet-indonesia',
+    isCollab: true,
   },
   {
     logo: '/logo-produk/brosur-hub.jpg',
@@ -57,6 +59,7 @@ const products = [
     ctaLabel: 'Buat Profil Digital',
     href: '/brosurhub',
     cover: true,
+    isCollab: true,
   },
   {
     logo: '/logo-produk/wa-blast.webp',
@@ -65,6 +68,7 @@ const products = [
       'Kirim promosi ke ribuan kontak database Anda dalam hitungan jam. Aman dari banned, bebas pilih segmen area, lengkap dengan laporan pengiriman.',
     ctaLabel: 'Kirim Blast Promo',
     href: '/wa-blast',
+    isCollab: true,
   },
 ]
 
@@ -194,8 +198,21 @@ export default function HomePage() {
             </p>
           </div>
 
+          <div className="flex flex-col gap-6 max-w-4xl mx-auto mb-16">
+            {products.filter(p => !p.isCollab).map((product) => (
+              <ProductCard key={product.href} {...product} />
+            ))}
+          </div>
+
+          <div className="text-center mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4 text-[#1A7A7A]">🤝 Produk Kolaborasi Resmi</h2>
+            <p className="text-[#333333]/60 max-w-xl mx-auto">
+              Kami juga bermitra dengan vendor spesialis untuk menyediakan ekosistem terintegrasi bagi operasional spesifik Anda.
+            </p>
+          </div>
+
           <div className="flex flex-col gap-6 max-w-4xl mx-auto">
-            {products.map((product) => (
+            {products.filter(p => p.isCollab).map((product) => (
               <ProductCard key={product.href} {...product} />
             ))}
           </div>

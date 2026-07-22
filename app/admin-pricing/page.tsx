@@ -1,294 +1,126 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Save, Plus, Trash2, ShieldCheck, LogOut, Tag, ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import {
+  Database, Clock, CheckCircle2, AlertCircle,
+  ShoppingBag, Globe, Smartphone, Car, FileText, MessageSquare,
+  RefreshCw, ArrowRight
+} from 'lucide-react'
 import Link from 'next/link'
 
-const DEFAULT = {
-  'pos-fnb': {
-    title: 'LOKAL POS F&B',
-    basePrices: [
-      { id: '1', area: 'Semarang (LOKAL Area)', price: 75000 },
-      { id: '2', area: 'Belitung (LOKAL Area)', price: 75000 },
-      { id: '3', area: 'Luar Daerah (Nasional)', price: 99000 },
-    ],
-    addons: [
-      { id: 'a1', name: 'Laporan Keuangan', price: 20000 },
-      { id: 'a2', name: 'Sistem Penggajian (Payroll)', price: 15000 },
-      { id: 'a3', name: 'Manajemen Meja', price: 15000 },
-      { id: 'a4', name: 'Jasa Setting Hardware (Sekali Bayar)', price: 50000 },
-      { id: 'a5', name: 'Tambahan Cabang', price: 50000 },
-    ],
-    discount6m: 10, discount12m: 20,
-    promoCodes: [{ id: 'p1', code: 'LOKALPOS', discount: 15, isActive: true }]
-  },
-  'iwash': {
-    title: 'LOKAL x Iwash',
-    basePrices: [
-      { id: '1', area: 'Starter', price: 150000 },
-      { id: '2', area: 'Pro', price: 250000 },
-      { id: '3', area: 'Enterprise', price: 500000 }
-    ],
-    addons: [], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'IWASHLOKAL', discount: 20, isActive: true }]
-  },
-  'valet-indonesia': {
-    title: 'LOKAL x ValetIndonesia',
-    basePrices: [
-      { id: '1', area: 'Harga Standar', price: 999000 },
-      { id: '2', area: 'Harga Promo', price: 299000 }
-    ],
-    addons: [], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'VALET2024', discount: 25, isActive: true }]
-  },
-  'brosurhub': {
-    title: 'LOKAL x BrosurHub',
-    basePrices: [
-      { id: '1', area: 'Basic (Per Tahun)', price: 59000 },
-      { id: '2', area: 'Standard (Per Tahun)', price: 119000 },
-      { id: '3', area: 'Premium (Per Tahun)', price: 169000 }
-    ],
-    addons: [], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'BROSURDIGITAL', discount: 20, isActive: true }]
-  },
-  'jasa-landing-page': {
-    title: 'LOKAL Web Studio',
-    basePrices: [
-      { id: 'landing-page', name: 'Landing Page 1 Halaman', prices: { '0.5': 1850000, '1': 2500000, '2': 4200000, '3': 5500000 }, desc: 'Website satu halaman yang fokus pada konversi produk tunggal atau promosi.' },
-      { id: 'company-profile', name: 'Company Profile (Max 3 Hal)', prices: { '0.5': 2500000, '1': 3500000, '2': 5800000, '3': 7700000 }, desc: 'Menampilkan profil bisnis, visi, misi, dan layanan secara elegan.' },
-      { id: 'katalog', name: 'Katalog Digital (Max 5 Hal)', prices: { '0.5': 3000000, '1': 4000000, '2': 6700000, '3': 8800000 }, desc: 'Katalog interaktif yang memanjakan mata, ideal untuk toko fisik.' },
-    ],
-    addons: [
-      { id: 'gmaps', name: 'Integrasi Google My Business (Maps)', price: 250000, type: 'flat' },
-      { id: 'seo', name: 'Setup SEO Foundation & Meta Pixel', price: 300000, type: 'flat' },
-      { id: 'dashboard', name: 'Web Performance Dashboard', price: 750000, type: 'yearly' },
-      { id: 'extra-pages', name: 'Tambahan Halaman (Per Halaman)', price: 250000, type: 'flat' },
-    ],
-    promoCodes: []
-  },
-  'wa-blast': {
-    title: 'WA Blasting',
-    basePrices: [
-      { id: '1', name: 'Blast Starter', price: 318000, kontak: 500, original: 435000, perNomor: '636', badge: 'PALING HEMAT' },
-      { id: '2', name: 'Blast Growth', price: 1390000, kontak: 2500, original: 1900000, perNomor: '556', badge: '' },
-      { id: '3', name: 'Blast Scale', price: 4760000, kontak: 10000, original: 6520000, perNomor: '476', badge: '' },
-    ],
-    addons: [],
-    promoCodes: []
-  }
-}
+const PRODUCTS = [
+  { key: 'pos-fnb',           label: 'LOKAL POS F&B',   icon: ShoppingBag,   color: 'bg-emerald-100 text-emerald-600', href: '/admin-pricing/pos-fnb' },
+  { key: 'jasa-landing-page', label: 'Web Studio',       icon: Globe,         color: 'bg-blue-100 text-blue-600',       href: '/admin-pricing/jasa-landing-page' },
+  { key: 'iwash',             label: 'iWash',            icon: Smartphone,    color: 'bg-cyan-100 text-cyan-600',       href: '/admin-pricing/iwash' },
+  { key: 'valet-indonesia',   label: 'Valet Indonesia',  icon: Car,           color: 'bg-purple-100 text-purple-600',   href: '/admin-pricing/valet-indonesia' },
+  { key: 'brosurhub',         label: 'BrosurHub',        icon: FileText,      color: 'bg-orange-100 text-orange-600',   href: '/admin-pricing/brosurhub' },
+  { key: 'wa-blast',          label: 'WA Blast',         icon: MessageSquare, color: 'bg-green-100 text-green-600',     href: '/admin-pricing/wa-blast' },
+]
 
-export default function AdminPricingPage() {
-  const router = useRouter()
-  const [pricingData, setPricingData] = useState<any>(DEFAULT)
-  const [activeTab, setActiveTab] = useState('pos-fnb')
-  const [isSaved, setIsSaved] = useState(false)
+export default function AdminOverviewPage() {
+  const [kvStatus, setKvStatus]   = useState<'loading' | 'ok' | 'error'>('loading')
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null)
+  const [source, setSource]       = useState<'kv' | 'default' | null>(null)
 
-  useEffect(() => {
-    const saved = localStorage.getItem('lokal_pricing_data')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        const merged: any = {}
-        Object.keys(DEFAULT).forEach(k => {
-          merged[k] = { ...DEFAULT[k as keyof typeof DEFAULT], ...(parsed[k] || {}) }
-        })
-        setPricingData(merged)
-      } catch { /* use defaults */ }
+  const check = async () => {
+    setKvStatus('loading')
+    try {
+      const res  = await fetch('/api/pricing')
+      const json = await res.json()
+      setKvStatus(res.ok ? 'ok' : 'error')
+      setSource(json.source)
+      setUpdatedAt(json.updatedAt)
+    } catch {
+      setKvStatus('error')
     }
-  }, [])
-
-  const handleSave = () => {
-    localStorage.setItem('lokal_pricing_data', JSON.stringify(pricingData))
-    setIsSaved(true)
-    setTimeout(() => setIsSaved(false), 3000)
   }
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/admin-login')
-  }
+  useEffect(() => { check() }, [])
 
-  const current = pricingData[activeTab] || DEFAULT['pos-fnb']
-  const handleChange = (field: string, val: any) => {
-    setPricingData((prev: any) => ({ ...prev, [activeTab]: { ...prev[activeTab], [field]: val } }))
+  const fmt = (iso: string | null) => {
+    if (!iso) return 'Belum pernah disimpan'
+    return new Intl.DateTimeFormat('id-ID', {
+      dateStyle: 'long', timeStyle: 'short', timeZone: 'Asia/Jakarta'
+    }).format(new Date(iso))
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] font-sans text-[#333333] pb-24">
-      {/* Header */}
-      <div className="bg-[#0f2e2e] text-white py-4 px-6 sticky top-0 z-50 shadow-md flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/" className="bg-white/10 p-2 rounded-lg hover:bg-white/20 transition"><ArrowLeft size={18} /></Link>
+    <div className="p-8 max-w-5xl mx-auto">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">Selamat Datang di Panel Admin 👋</h1>
+        <p className="text-gray-500 text-sm">Kelola harga dan konfigurasi produk LOKAL dari sini.</p>
+      </div>
+
+      {/* Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+        {/* KV Status */}
+        <div className={`rounded-2xl p-5 border-2 flex items-start gap-4 ${
+          kvStatus === 'ok'      ? 'bg-emerald-50 border-emerald-200' :
+          kvStatus === 'error'   ? 'bg-red-50 border-red-200' :
+                                   'bg-gray-50 border-gray-200'
+        }`}>
+          <div className={`mt-0.5 ${kvStatus === 'ok' ? 'text-emerald-600' : kvStatus === 'error' ? 'text-red-500' : 'text-gray-400'}`}>
+            {kvStatus === 'loading' ? <RefreshCw size={22} className="animate-spin" /> :
+             kvStatus === 'ok'      ? <CheckCircle2 size={22} /> : <AlertCircle size={22} />}
+          </div>
           <div>
-            <div className="flex items-center gap-2 font-bold text-lg"><ShieldCheck className="text-[#E8681A]" size={20} /> LOKAL Admin Panel</div>
-            <div className="text-xs text-white/50">Pengaturan Data CMS</div>
+            <div className="font-bold text-gray-800 text-sm">Database (Upstash KV)</div>
+            <div className={`text-xs mt-1 font-medium ${kvStatus === 'ok' ? 'text-emerald-600' : kvStatus === 'error' ? 'text-red-500' : 'text-gray-500'}`}>
+              {kvStatus === 'loading' ? 'Memeriksa koneksi...' : kvStatus === 'ok' ? 'Terhubung & Aktif' : 'Tidak dapat terhubung'}
+            </div>
           </div>
         </div>
-        <button onClick={handleLogout} className="flex items-center gap-2 bg-red-500/20 text-red-300 hover:bg-red-500 hover:text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
-          <LogOut size={16} /> Keluar
+
+        {/* Data Source */}
+        <div className="rounded-2xl p-5 border-2 bg-white border-gray-200 flex items-start gap-4">
+          <Database size={22} className="text-[#1A7A7A] mt-0.5 shrink-0" />
+          <div>
+            <div className="font-bold text-gray-800 text-sm">Sumber Data Aktif</div>
+            <div className="text-xs mt-1 font-medium text-[#1A7A7A]">
+              {source === 'kv' ? '✅ Dari Database (KV)' : source === 'default' ? '⚠️ Dari Default (Belum disimpan)' : '—'}
+            </div>
+          </div>
+        </div>
+
+        {/* Last Updated */}
+        <div className="rounded-2xl p-5 border-2 bg-white border-gray-200 flex items-start gap-4">
+          <Clock size={22} className="text-[#E8681A] mt-0.5 shrink-0" />
+          <div>
+            <div className="font-bold text-gray-800 text-sm">Terakhir Diperbarui</div>
+            <div className="text-xs mt-1 text-gray-500">{fmt(updatedAt)}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Refresh Button */}
+      <div className="flex justify-end mb-6">
+        <button onClick={check} className="flex items-center gap-2 text-xs text-gray-500 hover:text-[#1A7A7A] transition font-medium">
+          <RefreshCw size={13} /> Refresh Status
         </button>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 mt-8 flex flex-col md:flex-row gap-8">
-        {/* Sidebar */}
-        <div className="w-full md:w-64 shrink-0">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
-            <div className="p-4 border-b border-gray-100"><h2 className="font-bold text-gray-800 text-sm uppercase tracking-wider">Produk</h2></div>
-            <div className="flex flex-col">
-              {Object.entries(pricingData).map(([key, data]: [string, any]) => (
-                <button
-                  key={key}
-                  onClick={() => setActiveTab(key)}
-                  className={`text-left px-5 py-4 text-sm font-semibold transition-colors border-l-4 ${activeTab === key ? 'border-[#1A7A7A] bg-[#1A7A7A]/5 text-[#1A7A7A]' : 'border-transparent text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                >
-                  {data.title}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+      {/* Product Grid */}
+      <h2 className="text-base font-bold text-gray-700 mb-4 uppercase tracking-wider">Pengaturan Harga Produk</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {PRODUCTS.map(({ key, label, icon: Icon, color, href }) => (
+          <Link
+            key={key}
+            href={href}
+            className="group bg-white rounded-2xl p-5 border border-gray-200 hover:border-[#1A7A7A]/40 hover:shadow-md transition-all flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}>
+                <Icon size={20} />
+              </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-1">Pengaturan {current.title}</h2>
-                <p className="text-sm text-gray-500">Ubah harga paket, fitur tambahan, promo, dan diskon.</p>
-              </div>
-              <button onClick={handleSave} className="flex items-center gap-2 bg-[#1A7A7A] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#135c5c] transition shadow-lg shadow-[#1A7A7A]/30">
-                <Save size={18} /> Simpan Perubahan
-              </button>
-            </div>
-
-            {isSaved && <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-2">Tersimpan! Perubahan sudah aktif.</div>}
-
-            {/* Promo Codes */}
-            <div className="mb-10">
-              <h3 className="font-bold text-lg text-gray-800 mb-4 flex items-center gap-2"><Tag size={18} className="text-[#E8681A]" /> Kupon Promo</h3>
-              <div className="space-y-3 mb-4">
-                {current.promoCodes?.map((promo: any, idx: number) => (
-                  <div key={promo.id} className="flex flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <input type="text" value={promo.code} placeholder="KODEPROMO" className="flex-1 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm uppercase" onChange={(e) => {
-                      const newP = [...current.promoCodes]; newP[idx].code = e.target.value.toUpperCase(); handleChange('promoCodes', newP)
-                    }} />
-                    <div className="flex items-center gap-2">
-                      <input type="number" value={promo.discount} className="w-24 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                        const newP = [...current.promoCodes]; newP[idx].discount = Number(e.target.value); handleChange('promoCodes', newP)
-                      }} />
-                      <span className="text-gray-500 text-sm font-bold">%</span>
-                    </div>
-                    <label className="flex items-center gap-2 ml-2 cursor-pointer">
-                      <input type="checkbox" checked={promo.isActive} onChange={(e) => {
-                        const newP = [...current.promoCodes]; newP[idx].isActive = e.target.checked; handleChange('promoCodes', newP)
-                      }} className="w-5 h-5 rounded text-[#1A7A7A] focus:ring-[#1A7A7A]" />
-                      <span className="text-sm font-medium text-gray-600">Aktif</span>
-                    </label>
-                    <button onClick={() => {
-                      const newP = current.promoCodes.filter((_: any, i: number) => i !== idx); handleChange('promoCodes', newP)
-                    }} className="p-2.5 text-red-500 hover:bg-red-50 rounded-lg transition" title="Hapus Kupon"><Trash2 size={18} /></button>
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => {
-                const newP = [...(current.promoCodes || []), { id: Date.now().toString(), code: '', discount: 0, isActive: true }]; handleChange('promoCodes', newP)
-              }} className="flex items-center gap-2 text-[#1A7A7A] font-semibold text-sm hover:underline"><Plus size={16} /> Tambah Kupon Promo</button>
-            </div>
-
-            {/* Base Prices */}
-            <div className="mb-10">
-              <h3 className="font-bold text-lg text-gray-800 mb-4">Paket Dasar</h3>
-              <div className="space-y-3">
-                {current.basePrices.map((item: any, idx: number) => (
-                  <div key={item.id} className="flex flex-col sm:flex-row gap-3 sm:items-center">
-                    <input type="text" value={item.area || item.name} className="flex-1 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                      const newB = [...current.basePrices]; 
-                      if ('name' in newB[idx]) newB[idx].name = e.target.value;
-                      else newB[idx].area = e.target.value;
-                      handleChange('basePrices', newB)
-                    }} />
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-gray-400">Rp</span>
-                      <input type="number" value={item.price} className="w-full sm:w-40 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                        const newB = [...current.basePrices]; newB[idx].price = Number(e.target.value); handleChange('basePrices', newB)
-                      }} />
-                    </div>
-                    {item.desc !== undefined && (
-                      <input type="text" value={item.desc} placeholder="Deskripsi" className="flex-1 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                        const newB = [...current.basePrices]; newB[idx].desc = e.target.value; handleChange('basePrices', newB)
-                      }} />
-                    )}
-                    {item.prices !== undefined && (
-                      <div className="flex gap-2 w-full mt-2 lg:mt-0">
-                        <input type="number" value={item.prices['0.5']} placeholder="6Bln" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].prices['0.5'] = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                        <input type="number" value={item.prices['1']} placeholder="1Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].prices['1'] = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                        <input type="number" value={item.prices['2']} placeholder="2Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].prices['2'] = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                        <input type="number" value={item.prices['3']} placeholder="3Thn" className="w-full p-2.5 rounded-lg border text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].prices['3'] = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                      </div>
-                    )}
-                    {item.kontak !== undefined && (
-                      <div className="flex gap-2">
-                        <input type="number" value={item.kontak} placeholder="Jml Kontak" className="w-24 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].kontak = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                        <input type="number" value={item.original} placeholder="Harga Asli" className="w-32 p-2.5 rounded-lg border focus:ring-2 focus:ring-[#1A7A7A] text-sm" onChange={(e) => {
-                          const newB = [...current.basePrices]; newB[idx].original = Number(e.target.value); handleChange('basePrices', newB)
-                        }} />
-                      </div>
-                    )}
-                  </div>
-                ))}
+                <div className="font-semibold text-gray-800 text-sm">{label}</div>
+                <div className="text-xs text-gray-400 mt-0.5">Atur harga & promo</div>
               </div>
             </div>
-
-            {/* Addons (if applicable) */}
-            {current.addons && (
-              <div className="mb-10">
-                <h3 className="font-bold text-lg text-gray-800 mb-4">Add-ons (Opsional)</h3>
-                <div className="space-y-3 mb-4">
-                  {current.addons.map((addon: any, idx: number) => (
-                    <div key={addon.id} className="flex flex-col sm:flex-row gap-3 sm:items-center bg-gray-50 p-2 rounded-lg border border-gray-100">
-                      <input type="text" value={addon.name} className="flex-1 p-2 rounded border-transparent bg-transparent focus:bg-white focus:border-gray-300 text-sm" onChange={(e) => {
-                        const newA = [...current.addons]; newA[idx].name = e.target.value; handleChange('addons', newA)
-                      }} />
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-400">Rp</span>
-                        <input type="number" value={addon.price} className="w-32 p-2 rounded border-transparent bg-transparent focus:bg-white focus:border-gray-300 text-sm" onChange={(e) => {
-                          const newA = [...current.addons]; newA[idx].price = Number(e.target.value); handleChange('addons', newA)
-                        }} />
-                      </div>
-                      {addon.type !== undefined && (
-                        <select value={addon.type} className="p-2 rounded border-transparent bg-transparent focus:bg-white focus:border-gray-300 text-sm" onChange={(e) => {
-                          const newA = [...current.addons]; newA[idx].type = e.target.value; handleChange('addons', newA)
-                        }}>
-                          <option value="flat">Sekali Bayar</option>
-                          <option value="yearly">Per Tahun</option>
-                        </select>
-                      )}
-                      <button onClick={() => {
-                        const newA = current.addons.filter((_: any, i: number) => i !== idx); handleChange('addons', newA)
-                      }} className="p-2 text-gray-400 hover:text-red-500 transition"><Trash2 size={16} /></button>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => {
-                  const newA = [...current.addons, { id: Date.now().toString(), name: 'Add-on Baru', price: 0 }]; handleChange('addons', newA)
-                }} className="flex items-center gap-2 text-[#1A7A7A] font-semibold text-sm hover:underline"><Plus size={16} /> Tambah Add-on</button>
-              </div>
-            )}
-
-          </div>
-        </div>
+            <ArrowRight size={16} className="text-gray-300 group-hover:text-[#1A7A7A] transition-colors" />
+          </Link>
+        ))}
       </div>
     </div>
   )

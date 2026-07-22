@@ -1,4 +1,4 @@
-const WA_NUMBER  = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'
+const WA_NUMBER  = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 const WA_MESSAGE = 'Halo LOKAL! Saya tertarik dengan solusi digital untuk bisnis UMKM saya. Bisa tolong bantu?'
 
 export default function FloatingWhatsApp() {

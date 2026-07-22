@@ -37,24 +37,21 @@ export default function WebPricingCalculator() {
   const [extraPagesCount, setExtraPagesCount] = useState(1)
 
   useEffect(() => {
-    const saved = localStorage.getItem('lokal_pricing_data')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved)
-        if (parsed['jasa-landing-page']) {
-          const d = parsed['jasa-landing-page']
+    fetch('/api/pricing')
+      .then(r => r.json())
+      .then(json => {
+        const d = json?.data?.['jasa-landing-page']
+        if (d) {
           if (d.basePrices && d.basePrices.length > 0) {
             setBasePackages(d.basePrices.map((b: any) => ({
               id: b.id, name: b.name || b.area, prices: b.prices || { '0.5': 0, '1': 0, '2': 0, '3': 0 }, desc: b.desc || ''
             })))
             setBaseId(d.basePrices[0].id)
           }
-          if (d.addons) {
-            setAddons(d.addons)
-          }
+          if (d.addons) setAddons(d.addons)
         }
-      } catch { /* ignore */ }
-    }
+      })
+      .catch(() => { /* fallback to defaults */ })
   }, [])
 
   const toggleAddon = (id: string) => {
@@ -94,7 +91,7 @@ export default function WebPricingCalculator() {
     }).join('%0A')
     const msg = `Halo LOKAL, saya tertarik membuat website.%0A%0A*Paket:* ${activeBase}%0A*Durasi:* ${durLabel}%0A*Add-ons:*%0A${addonText || '- Tidak ada'}%0A%0A*Total Estimasi:* ${fmt(total)}%0A%0AMohon panduannya untuk proses selanjutnya.`
     
-    window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'}?text=${encodeURIComponent(msg)}`, '_blank')
+    window.open(`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'}?text=${encodeURIComponent(msg)}`, '_blank')
   }
 
   return (

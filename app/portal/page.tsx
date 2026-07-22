@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   alternates: { canonical: '/portal' },
 }
 
-const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6281234567890'
+const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 
 const links = [
   { id: 'pos-fnb',    label: 'Aplikasi Kasir Kafe/Resto (LOKAL POS)',       href: '/pos-fnb',           emoji: '🍽️', isInternal: true },
