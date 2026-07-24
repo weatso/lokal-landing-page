@@ -8,8 +8,10 @@ import { Menu, X, ChevronDown } from 'lucide-react'
 
 const internalLinks = [
   { label: 'Beranda',            href: '/' },
-  { label: 'Kasir F&B',          href: '/pos-fnb' },
   { label: 'Bikin Website',      href: '/jasa-landing-page' },
+  { label: 'Lokal F&B',          href: '/pos-fnb' },
+  { label: 'Lokal Retail',       href: '/pos-retail' },
+  { label: 'Lokal Beauty',       href: '/pos-beauty' },
 ]
 
 const collabLinks = [

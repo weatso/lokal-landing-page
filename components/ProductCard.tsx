@@ -11,6 +11,7 @@ interface ProductCardProps {
   href: string
   cover?: boolean
   isCollab?: boolean
+  blurLogo?: boolean
 }
 
 export default function ProductCard({
@@ -22,6 +23,7 @@ export default function ProductCard({
   href,
   cover = false,
   isCollab = false,
+  blurLogo = false,
 }: ProductCardProps) {
   return (
     <div className="bg-white rounded-2xl p-5 md:p-6 border border-[#1A7A7A]/10 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col md:flex-row items-center gap-6 group">
@@ -32,7 +34,7 @@ export default function ProductCard({
           alt={typeof title === 'string' ? title : "Product"}
           width={160}
           height={96}
-          className={`w-full h-full mix-blend-multiply ${cover ? 'object-contain scale-125' : 'object-contain'}`}
+          className={`w-full h-full mix-blend-multiply transition-all duration-300 ${cover ? 'object-contain scale-125' : 'object-contain'} ${blurLogo ? 'blur-sm opacity-50 group-hover:blur-0 group-hover:opacity-100' : ''}`}
           loading="lazy"
         />
       </div>

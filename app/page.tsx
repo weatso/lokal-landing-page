@@ -18,20 +18,40 @@ const WA_NUMBER = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 
 const products = [
   {
-    logo: '/logo-produk/lokal-pos.webp',
-    title: 'LOKAL POS F&B',
-    description:
-      'Otomatiskan pencatatan pesanan, pantau ketersediaan stok, dan amankan laporan shift harian resto Anda dari mana saja secara real-time.',
-    ctaLabel: 'Kunci Laci Kasir Saya',
-    href: '/pos-fnb',
-  },
-  {
     logo: '/logo-produk/lokal-web.webp',
     title: 'LOKAL Web Studio',
     description:
       'Pembuatan website / landing page profesional, cepat, dan berorientasi pada konversi penjualan. Terima beres termasuk copywriting dan hosting.',
     ctaLabel: 'Bikin Website Sekarang',
     href: '/jasa-landing-page',
+  },
+  {
+    logo: '/logo-produk/lokal-pos.webp',
+    title: 'Lokal F&B',
+    description:
+      'Otomatiskan pencatatan pesanan, pantau ketersediaan stok, dan amankan laporan shift harian resto Anda dari mana saja secara real-time.',
+    ctaLabel: 'Kunci Laci Kasir Saya',
+    href: '/pos-fnb',
+  },
+  {
+    logo: '/logo-produk/lokal-pos.webp',
+    title: 'LOKAL Retail',
+    preTitle: 'Segera Hadir!',
+    description:
+      'Sistem kasir cerdas terintegrasi barcode scanner dengan pengunci stok otomatis untuk minimarket, vape store, pet shop, dan retail modern.',
+    ctaLabel: 'Lihat Sneak Peek',
+    href: '/pos-retail',
+    blurLogo: true,
+  },
+  {
+    logo: '/logo-produk/lokal-pos.webp',
+    title: 'LOKAL Beauty',
+    preTitle: 'Segera Hadir!',
+    description:
+      'Otomatisasi manajemen salon dan barbershop dengan auto-split komisi kapster, sistem member Poin VIP, dan struk digital interaktif.',
+    ctaLabel: 'Lihat Sneak Peek',
+    href: '/pos-beauty',
+    blurLogo: true,
   },
   {
     logo: '/logo-produk/i-wash.png',

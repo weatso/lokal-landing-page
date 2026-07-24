@@ -5,7 +5,7 @@ import {
   ArrowRight, CheckCircle2, Store, Clock, ShieldCheck,
   Smartphone, Check, Gift, MapPin, Zap, Coffee, Package,
   UserCheck, PieChart, Heart, Tv2, Vibrate, HardDrive, Building2, MessageSquare,
-  Plus, Minus, ChevronDown, ChevronUp, ShoppingCart, ChefHat
+  Plus, Minus, ChevronDown, ChevronUp, ShoppingCart, ChefHat, Scissors
 } from 'lucide-react'
 import * as LucideIcons from 'lucide-react'
 import PromoCodeInput from '@/components/PromoCodeInput'
@@ -40,7 +40,7 @@ const DURATIONS = [
   { value: 12, payMonths: 10, label: '1 Tahun',  sublabel: 'Bayar 10, aktif 12 bln', bonus: 2, tag: 'Gratis 2 Bulan' },
 ]
 
-const CAT_ORDER = ['Fitur Kasir & Dapur', 'Karyawan & Laporan', 'Pelanggan Setia', 'Cabang Ekstra', 'Sekali Bayar']
+const CAT_ORDER = ['Operasional', 'Pelanggan Setia', 'Karyawan & Laporan', 'Cabang Ekstra', 'Sekali Bayar']
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
@@ -100,7 +100,7 @@ function AddonRow({
   )
 }
 
-export default function PosFnbPage() {
+export default function PosRetailPage() {
   const [pricing, setPricing]             = useState<PricingData>(DEFAULT)
   const [selectedArea, setSelectedArea]   = useState<string>('')
   const [duration, setDuration]           = useState(12)
@@ -108,13 +108,13 @@ export default function PosFnbPage() {
   const [extraBranchCount, setExtraBranchCount] = useState(0)
   const [promoDiscount, setPromoDiscount] = useState(0)
   const [appliedPromo, setAppliedPromo]   = useState('')
-  const [openCats, setOpenCats]           = useState<string[]>(['Fitur Kasir & Dapur'])  // accordion state
+  const [openCats, setOpenCats]           = useState<string[]>(['Operasional'])  // accordion state
 
   useEffect(() => {
     fetch('/api/pricing')
       .then(r => r.json())
       .then(json => {
-        const d = json?.data?.['pos-fnb']
+        const d = json?.data?.['pos-retail']
         if (d) {
           if (!d.promoCodes) d.promoCodes = []
           setPricing({ ...DEFAULT, ...d })
@@ -163,7 +163,7 @@ export default function PosFnbPage() {
   const finalTotal        = subtotal - promoAmt + oneTimeTotal
 
   const waMsg = encodeURIComponent(
-    `Halo LOKAL! Saya tertarik dengan Lokal F&B.\n\n📍 Area: ${areaObj?.area}\n⏱ Durasi: ${durCfg.label}${durCfg.bonus > 0 ? ` (Bayar ${durCfg.payMonths} bulan, gratis ${durCfg.bonus} bulan)` : ''}\n🔧 Add-ons: ${selectedAddons.length > 0 ? selectedAddons.map(id => pricing.addons.find(a => a.id === id)?.name).join(', ') : 'Tidak ada'}${extraBranchCount > 0 ? `\n🏢 Cabang Ekstra: ${extraBranchCount} cabang` : ''}\n💰 Estimasi Total: ${fmt(finalTotal)}\n\nBoleh minta info lebih lanjut?`
+    `Halo LOKAL! Saya tertarik dengan Lokal Retail.\n\n📍 Area: ${areaObj?.area}\n⏱ Durasi: ${durCfg.label}${durCfg.bonus > 0 ? ` (Bayar ${durCfg.payMonths} bulan, gratis ${durCfg.bonus} bulan)` : ''}\n🔧 Add-ons: ${selectedAddons.length > 0 ? selectedAddons.map(id => pricing.addons.find(a => a.id === id)?.name).join(', ') : 'Tidak ada'}${extraBranchCount > 0 ? `\n🏢 Cabang Ekstra: ${extraBranchCount} cabang` : ''}\n💰 Estimasi Total: ${fmt(finalTotal)}\n\nBoleh minta info lebih lanjut?`
   )
 
   // ─── Summary Box (shared markup, used in sidebar & bottom sheet) ──────────
@@ -246,19 +246,21 @@ export default function PosFnbPage() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-[#1A7A7A]/10 blur-[100px] rounded-full pointer-events-none" />
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
             <div className="text-center md:text-left">
-              <div className="mb-6 inline-block bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
+              <div className="mb-6 inline-flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-white p-2 sm:pr-4 rounded-xl border border-gray-100 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/logo-produk/lokal-pos.webp" alt="Lokal F&B" className="h-8 object-contain" />
+                <img src="/logo-produk/lokal-pos.webp" alt="Lokal Retail" className="h-8 object-contain" />
+                <span className="hidden sm:block w-px h-6 bg-gray-200"></span>
+                <span className="text-xs font-bold text-[#1A7A7A] uppercase tracking-wider px-2 sm:px-0 pb-1 sm:pb-0">Dirancang Khusus untuk Bisnis Retail & Toko Modern</span>
               </div>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight mb-6">
-                Tinggalkan Cara Lama.<br />
-                <span className="text-[#1A7A7A]">Kelola Resto Lebih Modern.</span>
+                Berhenti Kehilangan Uang Karena<br />
+                <span className="text-[#1A7A7A]">Stok Berantakan & Kasir Lambat.</span>
               </h1>
               <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-lg">
-                Kunci laci kasir Anda dan pantau resto dari mana saja. Sistem kasir cerdas tanpa alat mahal, cukup pakai tablet atau HP android yang sudah ada. Staf baru bisa lancar pakai dalam 3 menit.
+                Sistem kasir super gesit dengan integrasi barcode scanner, pengunci stok otomatis, dan pelacak aktivitas kasir. Cegah kebocoran barang dan pantau omzet dari mana saja, bahkan saat internet mati.
               </p>
               <a href="#pricing" className="bg-[#1A7A7A] text-white px-8 py-4 rounded-xl font-bold hover:bg-[#135c5c] transition shadow-lg shadow-[#1A7A7A]/30 inline-flex items-center gap-2">
-                Hitung Harga Paket <ArrowRight size={20} />
+                🚀 Mulai dari Rp 50.000 / bulan <ArrowRight size={20} />
               </a>
             </div>
 
@@ -273,26 +275,39 @@ export default function PosFnbPage() {
                   </div>
                   <div className="bg-gray-100 px-3 py-1 rounded text-xs font-bold text-gray-500">Kasir Utama</div>
                 </div>
-                <div className="flex gap-6 h-full">
-                  <div className="flex-1 grid grid-cols-2 gap-3">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="bg-gray-50 rounded-xl border border-gray-100 p-3 flex flex-col justify-between">
-                        <div className="w-10 h-10 bg-gray-200 rounded-lg mb-2" />
-                        <div>
-                          <div className="w-16 h-3 bg-gray-300 rounded mb-1" />
-                          <div className="w-10 h-3 bg-[#E8681A]/50 rounded" />
+                <div className="flex gap-4 h-full">
+                  <div className="flex-1 flex flex-col gap-3">
+                    <div className="text-xs font-bold text-gray-400 uppercase tracking-wide">Scan Barcode / Cari Produk</div>
+                    {[1,2,3].map(i => (
+                      <div key={i} className="bg-gray-50 rounded-xl border border-gray-100 p-3 flex items-center gap-3">
+                        <div className="w-12 h-12 bg-gray-200 rounded-lg flex-shrink-0 flex items-center justify-center">
+                          <div className="flex gap-0.5 h-5 items-center">
+                            <div className="w-px h-full bg-gray-400"></div>
+                            <div className="w-[3px] h-full bg-gray-400"></div>
+                            <div className="w-px h-full bg-gray-400"></div>
+                            <div className="w-[4px] h-full bg-gray-400"></div>
+                            <div className="w-px h-full bg-gray-400"></div>
+                            <div className="w-[2px] h-full bg-gray-400"></div>
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <div className="w-3/4 h-3 bg-gray-300 rounded mb-1.5" />
+                          <div className="w-1/2 h-2.5 bg-[#E8681A]/40 rounded" />
+                        </div>
+                        <div className="w-6 h-6 rounded-md bg-gray-200 flex items-center justify-center text-gray-500">
+                          <Plus size={12} />
                         </div>
                       </div>
                     ))}
                   </div>
                   <div className="w-1/3 bg-gray-50 rounded-xl border border-gray-100 p-4 flex flex-col">
-                    <div className="font-bold text-sm mb-4">Order #1042</div>
+                    <div className="font-bold text-sm mb-4">Kasir Retail #3021</div>
                     <div className="flex-1 space-y-3">
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">Nasi Goreng</span><span className="font-semibold">25k</span></div>
-                      <div className="flex justify-between text-xs"><span className="text-gray-500">Es Teh</span><span className="font-semibold">5k</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500 truncate mr-2">Royal Canin 1kg</span><span className="font-semibold">120k</span></div>
+                      <div className="flex justify-between text-xs"><span className="text-gray-500 truncate mr-2">Liquid 60ml</span><span className="font-semibold">95k</span></div>
                     </div>
                     <div className="pt-3 border-t border-gray-200 mt-auto">
-                      <div className="flex justify-between text-sm font-bold mb-3"><span>Total</span><span className="text-[#1A7A7A]">30k</span></div>
+                      <div className="flex justify-between text-sm font-bold mb-3"><span>Total</span><span className="text-[#1A7A7A]">215k</span></div>
                       <div className="w-full py-2 bg-[#E8681A] rounded-lg text-white text-xs font-bold text-center">Bayar</div>
                     </div>
                   </div>
@@ -300,8 +315,8 @@ export default function PosFnbPage() {
                 <div className="absolute right-2 top-1/4 bg-white p-3 rounded-xl shadow-xl border border-gray-100 flex items-center gap-3 animate-[bounce_4s_infinite]">
                   <div className="bg-green-100 text-green-600 p-2 rounded-lg"><CheckCircle2 size={16} /></div>
                   <div>
-                    <div className="text-xs text-gray-500">Pesanan Baru</div>
-                    <div className="text-sm font-bold">Meja 04</div>
+                    <div className="text-xs text-gray-500">Barcode Scanned</div>
+                    <div className="text-sm font-bold">+1 Item</div>
                   </div>
                 </div>
               </div>
@@ -312,15 +327,15 @@ export default function PosFnbPage() {
         {/* ── FEATURES ─────────────────────────────────────────────────────── */}
         <section className="max-w-6xl mx-auto px-4 mb-16 md:mb-24">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Fitur Andalan Resto Modern</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Kami merancang sistem ini untuk menyelesaikan masalah klasik di bisnis kuliner. Tanpa ribet, langsung pakai.</p>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Kendalikan Penuh Arus Barang & Uang Anda</h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">Masih mengalami masalah stok sistem vs fisik yang berbeda? Atau kasir yang rentan curang? Selesaikan dengan Lokal Retail.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { Icon: Store,      color: 'text-[#1A7A7A]', bg: 'bg-[#1A7A7A]/10', title: 'Pencatatan Instan',    desc: 'Mencegah pesanan terlewat saat jam ramai. Klik menu, otomatis masuk ke dapur.' },
-              { Icon: Clock,      color: 'text-[#E8681A]', bg: 'bg-[#E8681A]/10', title: 'Stok Real-time',       desc: 'Ketahui bahan baku yang hampir habis sebelum benar-benar kehabisan.' },
-              { Icon: ShieldCheck,color: 'text-green-600', bg: 'bg-green-100',    title: 'Anti-Fraud & Laporan', desc: 'Rekap otomatis tiap pergantian shift kasir. Mencegah selisih uang dan kecurangan.' },
-              { Icon: Smartphone, color: 'text-blue-600',  bg: 'bg-blue-100',     title: 'Zero Hardware Cost',  desc: 'Bisa pakai HP atau tablet Android yang sudah Anda miliki. Sambungkan ke printer bluetooth murah.' },
+              { Icon: Zap,        color: 'text-[#1A7A7A]', bg: 'bg-[#1A7A7A]/10', title: 'Offline-First & Barcode',  desc: 'Tarik data barang kilat dengan scanner. Tetap berfungsi tanpa delay meski internet terputus.' },
+              { Icon: Package,    color: 'text-[#E8681A]', bg: 'bg-[#E8681A]/10', title: 'Oversell Prevention',      desc: 'Fitur pengunci otomatis. Kasir tidak bisa memproses transaksi jika stok riil sudah nol.' },
+              { Icon: ShieldCheck,color: 'text-green-600', bg: 'bg-green-100',    title: 'Security Log Rahasia',     desc: 'Lacak penyesuaian stok manual, pembatalan (Void), hingga akses laci uang secara diam-diam.' },
+              { Icon: Smartphone, color: 'text-blue-600',  bg: 'bg-blue-100',     title: 'Zero Hardware Cost',       desc: 'Bisa pakai HP atau tablet Android yang sudah Anda miliki. Sambungkan ke scanner & printer bluetooth.' },
             ].map(({ Icon, color, bg, title, desc }) => (
               <div key={title} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition group">
                 <div className={`w-12 h-12 ${bg} ${color} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition`}>
@@ -337,10 +352,23 @@ export default function PosFnbPage() {
         <section id="pricing" className="max-w-5xl mx-auto px-4 mb-24">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Sistem Fleksibel. Bayar Sesuai Kebutuhan.</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Lokal F&B menggunakan model <strong>Basic + Add-ons</strong>. Pilih area Anda dan centang fitur ekstra yang Anda butuhkan.</p>
+            <p className="text-gray-600 max-w-2xl mx-auto">Lokal Retail menggunakan model <strong>Basic + Add-ons</strong>. Pilih area Anda dan centang fitur ekstra yang Anda butuhkan.</p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+          <div className="relative">
+            {/* COMING SOON OVERLAY */}
+            <div className="absolute inset-[-20px] z-50 flex items-center justify-center backdrop-blur-[4px] bg-white/40 rounded-3xl">
+               <div className="bg-white p-8 rounded-2xl shadow-2xl border border-gray-100 text-center max-w-md relative z-10 animate-[fadeIn_0.5s_ease-out]">
+                 <div className="w-16 h-16 bg-[#E8681A]/10 text-[#E8681A] rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Clock size={32} />
+                 </div>
+                 <h3 className="text-2xl font-bold mb-2">Segera Hadir!</h3>
+                 <p className="text-gray-600">Kalkulator dan pemesanan untuk Lokal Retail sedang dipersiapkan. Hubungi kami untuk jadi yang pertama mencoba.</p>
+                 <a href={`https://wa.me/${WA}?text=${waMsg}`} target="_blank" rel="noopener noreferrer" className="btn-primary mt-6 w-full justify-center">Kabari Saya Saat Rilis</a>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 select-none pointer-events-none blur-[2px] opacity-60">
 
             {/* ─ Left: 3-step configurator ─────────────────────────────── */}
             <div className="lg:col-span-3 space-y-4">
@@ -502,6 +530,7 @@ export default function PosFnbPage() {
               </div>
             </div>
           </div>
+        </div>
         </section>
 
       </main>
