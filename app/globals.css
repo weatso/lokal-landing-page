@@ -11,14 +11,21 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
     @apply font-sans text-[#333333] bg-[#FAFAFA] antialiased;
+    overflow-x: hidden;
+    width: 100%;
   }
 
   * {
     @apply box-border;
+  }
+
+  img, svg, video {
+    max-width: 100%;
   }
 }
 
@@ -92,7 +99,7 @@
 
   /* ---- FLOATING WA ---- */
   .floating-wa {
-    @apply fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-[#25D366] hover:bg-[#1db954] text-white font-semibold px-5 py-3.5 rounded-full shadow-2xl hover:shadow-green-400/40 transition-all duration-300 hover:-translate-y-1 active:translate-y-0;
+    @apply fixed bottom-6 right-4 sm:right-6 z-50 flex items-center gap-3 bg-[#25D366] hover:bg-[#1db954] text-white font-semibold px-4 sm:px-5 py-3 sm:py-3.5 rounded-full shadow-2xl hover:shadow-green-400/40 transition-all duration-300 hover:-translate-y-1 active:translate-y-0;
   }
 
   /* ---- DIVIDER ---- */

@@ -95,18 +95,18 @@ export default function HomePage() {
         <div className="absolute top-1/4 right-10 w-72 h-72 rounded-full opacity-10 blur-3xl pointer-events-none" style={{ background: '#E8681A' }} />
         <div className="absolute bottom-1/4 left-10 w-96 h-96 rounded-full opacity-10 blur-3xl pointer-events-none" style={{ background: '#2fa8a7' }} />
 
-        <div className="section-container relative z-10 pt-28 pb-16 text-center max-w-5xl">
+        <div className="section-container relative z-10 pt-28 pb-16 text-center max-w-5xl w-full">
           <div className="inline-block bg-white/10 border border-white/20 rounded-full px-5 py-2 mb-8 text-sm backdrop-blur-sm text-white/90 tracking-wide">
             #pakai<span className="text-[#E8681A]">lokal</span>aja
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
             Digitalisasi Bisnis<br />
             <span style={{ color: '#E8681A' }}>Tanpa Bikin</span>{' '}
             Pusing Kepala.
           </h1>
 
-          <p className="max-w-2xl mx-auto text-white/75 text-lg md:text-xl leading-relaxed mb-10">
+          <p className="max-w-2xl mx-auto text-white/75 text-base md:text-xl leading-relaxed mb-10 px-2">
             Ekosistem terintegrasi untuk mengotomatiskan operasional UMKM Anda.
             Kami membangun sistem ini dengan prinsip{' '}
             <span className="text-white font-semibold">zero-friction</span> — saking
@@ -116,7 +116,7 @@ export default function HomePage() {
           </p>
 
           <div className="max-w-3xl mx-auto bg-black/20 border border-[#E8681A]/30 rounded-2xl p-4 md:p-6 mb-8 backdrop-blur-sm text-left flex items-start gap-4">
-            <div className="shrink-0 w-10 h-10 rounded-full bg-[#E8681A]/20 flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 rounded-full bg-[#E8681A]/20 flex items-center justify-center mt-0.5">
               <Shield size={20} className="text-[#E8681A]" />
             </div>
             <div>
@@ -132,8 +132,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#routing" className="btn-primary text-base px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full px-4 sm:px-0">
+            <a href="#routing" className="btn-primary text-base px-8 py-4 w-full sm:w-auto justify-center">
               Pilih Solusi Bisnis Anda
               <ArrowDown size={18} className="animate-bounce" />
             </a>
@@ -141,7 +141,7 @@ export default function HomePage() {
               href={`https://wa.me/${WA_NUMBER}?text=${consultationMsg}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-white/80 hover:text-white font-semibold transition-colors duration-200 border border-white/20 hover:border-white/50 rounded-xl px-8 py-4 backdrop-blur-sm"
+              className="inline-flex items-center justify-center gap-2 text-white/80 hover:text-white font-semibold transition-colors duration-200 border border-white/20 hover:border-white/50 rounded-xl px-8 py-4 backdrop-blur-sm w-full sm:w-auto"
             >
               <MessageCircle size={18} />
               Konsultasi via WA

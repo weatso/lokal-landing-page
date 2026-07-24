@@ -40,11 +40,11 @@ export default function JasaLandingPage() {
       <main className="flex-grow pt-24 pb-16">
 
         {/* Hero */}
-        <section className="px-4 mb-24 relative">
+        <section className="px-4 mb-16 md:mb-24 relative overflow-hidden">
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
 
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
-            <div>
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center relative z-10">
+            <div className="text-center md:text-left">
               <div className="mb-6 inline-block bg-white p-2 rounded-xl border border-gray-100 shadow-sm">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/logo-produk/lokal-web.webp" alt="LOKAL Web Studio" className="h-8 object-contain" />
@@ -66,8 +66,8 @@ export default function JasaLandingPage() {
               </div>
             </div>
 
-            {/* Mockup */}
-            <div className="relative">
+            {/* Mockup — hidden on mobile */}
+            <div className="relative hidden sm:block">
               <div className="aspect-[4/3] bg-white rounded-3xl shadow-2xl border border-gray-100 p-5 flex flex-col relative overflow-hidden transform rotate-1 hover:rotate-0 transition duration-500">
                 <div className="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
                   <div className="flex gap-1.5"><div className="w-3 h-3 rounded-full bg-red-400" /><div className="w-3 h-3 rounded-full bg-yellow-400" /><div className="w-3 h-3 rounded-full bg-green-400" /></div>
@@ -88,11 +88,11 @@ export default function JasaLandingPage() {
                   </div>
                 </div>
               </div>
-              <div className="absolute -right-6 top-1/4 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-2 animate-[bounce_3s_infinite]">
+              <div className="absolute right-2 top-1/4 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-2 animate-[bounce_3s_infinite]">
                 <div className="bg-green-100 text-green-600 p-1.5 rounded-lg"><Zap size={14} /></div>
                 <div><div className="text-[10px] text-gray-400">Kecepatan</div><div className="text-xs font-bold">Fast Loading ⚡</div></div>
               </div>
-              <div className="absolute -left-6 bottom-1/4 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-2 animate-[bounce_4s_infinite]">
+              <div className="absolute left-2 bottom-1/4 bg-white p-3 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-2 animate-[bounce_4s_infinite]">
                 <div className="bg-blue-100 text-blue-600 p-1.5 rounded-lg"><Smartphone size={14} /></div>
                 <div><div className="text-[10px] text-gray-400">Tampilan</div><div className="text-xs font-bold">Mobile Friendly 📱</div></div>
               </div>

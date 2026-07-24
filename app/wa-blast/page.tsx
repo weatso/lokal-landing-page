@@ -66,9 +66,9 @@ export default function WaBlastPage() {
       <main className="flex-grow pt-24 pb-16">
 
         {/* Hero */}
-        <section className="px-4 mb-24 relative">
-          <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-            <div>
+        <section className="px-4 mb-16 md:mb-24 relative overflow-hidden">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="text-center md:text-left">
               <div className="flex items-center gap-4 mb-6">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/lokal.png" alt="LOKAL" className="h-6 object-contain" />
@@ -90,8 +90,8 @@ export default function WaBlastPage() {
               </a>
             </div>
 
-            {/* Illustration */}
-            <div className="w-full md:max-w-sm mx-auto shrink-0 relative">
+            {/* Illustration — shown below on mobile, right side on md+ */}
+            <div className="w-full max-w-sm mx-auto shrink-0 relative">
               <div className="absolute inset-0 bg-green-500/20 blur-[80px] rounded-full" />
               <div className="bg-white rounded-[2rem] p-6 shadow-2xl relative border-4 border-gray-100">
                 <div className="flex items-center gap-3 mb-5 pb-4 border-b border-gray-100">
@@ -133,7 +133,7 @@ export default function WaBlastPage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Kenapa Pakai WA Blast Kami?</h2>
             <p className="text-gray-600 max-w-2xl mx-auto">Kami mengelola teknis pengiriman agar nomor bisnis Anda tetap aman dari banned.</p>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {FEATURES.map(({ Icon, bg, color, title, desc }) => (
               <div key={title} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <div className={`w-12 h-12 ${bg} ${color} rounded-xl flex items-center justify-center mb-6`}><Icon size={24} /></div>

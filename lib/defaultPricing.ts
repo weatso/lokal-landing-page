@@ -2,7 +2,9 @@ export const DEFAULT_PRICING = {
   'pos-fnb': {
     title: 'LOKAL POS F&B',
     basePrices: [
-      { id: 'core', area: 'CORE ENGINE (1 Cabang)', price: 50000 },
+      { id: 'semarang', area: 'Semarang (LOKAL Area)', price: 50000 },
+      { id: 'belitung', area: 'Belitung (LOKAL Area)', price: 50000 },
+      { id: 'nasional', area: 'Area Lain (Indonesia)', price: 65000 },
     ],
     addons: [],
     discount6m: 10, discount12m: 20,

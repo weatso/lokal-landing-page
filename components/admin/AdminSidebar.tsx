@@ -1,12 +1,13 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingBag, Globe, Smartphone,
   Car, FileText, MessageSquare, LogOut, ChevronRight,
-  ShieldCheck
+  ShieldCheck, Menu, X
 } from 'lucide-react'
 
 const PRODUCTS = [
@@ -18,7 +19,7 @@ const PRODUCTS = [
   { key: 'wa-blast',         label: 'WA Blast',              icon: MessageSquare,  color: 'text-green-500'   },
 ]
 
-export default function AdminSidebar() {
+function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
   const router   = useRouter()
 
@@ -28,9 +29,9 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className="w-64 shrink-0 bg-[#0d1f1f] text-white flex flex-col min-h-screen sticky top-0">
+    <aside className="w-64 bg-[#0d1f1f] text-white flex flex-col h-full">
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-white/10">
+      <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 bg-[#E8681A] rounded-xl flex items-center justify-center shrink-0">
             <ShieldCheck size={18} className="text-white" />
@@ -40,6 +41,11 @@ export default function AdminSidebar() {
             <div className="text-white/40 text-xs">Control Panel</div>
           </div>
         </div>
+        {onClose && (
+          <button onClick={onClose} className="p-1 rounded-lg text-white/40 hover:text-white hover:bg-white/10 transition-colors">
+            <X size={18} />
+          </button>
+        )}
       </div>
 
       {/* Nav */}
@@ -47,6 +53,7 @@ export default function AdminSidebar() {
         {/* Overview */}
         <Link
           href="/admin-pricing"
+          onClick={onClose}
           className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
             pathname === '/admin-pricing'
               ? 'bg-[#1A7A7A] text-white'
@@ -69,6 +76,7 @@ export default function AdminSidebar() {
             <Link
               key={key}
               href={href}
+              onClick={onClose}
               className={`flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[#1A7A7A]/20 text-white border border-[#1A7A7A]/40'
@@ -89,6 +97,7 @@ export default function AdminSidebar() {
       <div className="px-3 py-4 border-t border-white/10">
         <Link
           href="/"
+          onClick={onClose}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all mb-1"
         >
           <Globe size={16} />
@@ -103,5 +112,50 @@ export default function AdminSidebar() {
         </button>
       </div>
     </aside>
+  )
+}
+
+export default function AdminSidebar() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <div className="hidden lg:flex shrink-0 min-h-screen sticky top-0">
+        <SidebarContent />
+      </div>
+
+      {/* Mobile top bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-[#0d1f1f] text-white flex items-center gap-3 px-4 py-3 border-b border-white/10">
+        <button
+          onClick={() => setIsOpen(true)}
+          className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu size={22} />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 bg-[#E8681A] rounded-lg flex items-center justify-center shrink-0">
+            <ShieldCheck size={14} className="text-white" />
+          </div>
+          <span className="font-bold text-sm">LOKAL Admin</span>
+        </div>
+      </div>
+
+      {/* Mobile drawer overlay */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsOpen(false)}
+          />
+          {/* Drawer */}
+          <div className="relative z-10 flex h-full">
+            <SidebarContent onClose={() => setIsOpen(false)} />
+          </div>
+        </div>
+      )}
+    </>
   )
 }
