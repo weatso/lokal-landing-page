@@ -8,11 +8,12 @@ interface PromoCode {
   code: string
   discount: number
   isActive: boolean
+  type?: 'percentage' | 'nominal' | 'months'
 }
 
 interface PromoCodeInputProps {
   promoCodes?: PromoCode[]
-  onApply?: (discount: number, code: string) => void
+  onApply?: (promo: PromoCode) => void
   onClear?: () => void
 }
 
@@ -35,7 +36,7 @@ export default function PromoCodeInput({
     if (found) {
       setStatus('success')
       setAppliedCode(found)
-      onApply?.(found.discount, found.code)
+      onApply?.(found)
     } else {
       setStatus('error')
       setAppliedCode(null)
@@ -71,7 +72,15 @@ export default function PromoCodeInput({
                 Kode <span className="tracking-widest">{appliedCode.code}</span> berhasil diterapkan!
               </p>
               <p className="text-xs text-green-600 mt-0.5">
-                Diskon <span className="font-black">{appliedCode.discount}%</span> telah aktif pada harga di bawah.
+                {(!appliedCode.type || appliedCode.type === 'percentage') && (
+                  <>Diskon <span className="font-black">{appliedCode.discount}%</span> telah aktif pada harga di bawah.</>
+                )}
+                {appliedCode.type === 'nominal' && (
+                  <>Potongan <span className="font-black">Rp {appliedCode.discount.toLocaleString('id-ID')}</span> telah aktif pada harga di bawah.</>
+                )}
+                {appliedCode.type === 'months' && (
+                  <>Gratis <span className="font-black">{appliedCode.discount} Bulan</span> langganan tambahan!</>
+                )}
               </p>
             </div>
           </div>

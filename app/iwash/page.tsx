@@ -164,7 +164,7 @@ export default function IwashPage() {
             <div className="max-w-xl mx-auto mb-10">
               <PromoCodeInput
                 promoCodes={pricing.promoCodes}
-                onApply={(d, c) => { setPromoDiscount(d); setAppliedPromo(c) }}
+                onApply={(promo) => { setPromoDiscount(promo.discount); setAppliedPromo(promo.code) }}
                 onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
               />
             </div>

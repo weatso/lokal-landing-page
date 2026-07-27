@@ -92,6 +92,7 @@ export default function ProductPricingPage() {
 
   const isWebStudio = product === 'jasa-landing-page'
   const isWaBlast   = product === 'wa-blast'
+  const isPos       = product.startsWith('pos-')
 
   return (
     <div className="p-6 md:p-8 max-w-4xl mx-auto">
@@ -156,18 +157,40 @@ export default function ProductPricingPage() {
                       handleChange('promoCodes', newP)
                     }}
                   />
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="number"
-                      value={promo.discount}
-                      className="w-20 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm text-center"
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <select
+                      value={promo.type || 'percentage'}
                       onChange={e => {
                         const newP = [...current.promoCodes]
-                        newP[idx] = { ...newP[idx], discount: Number(e.target.value) }
+                        let newDiscount = promo.discount
+                        if (e.target.value === 'percentage' && newDiscount > 100) newDiscount = 100
+                        newP[idx] = { ...newP[idx], type: e.target.value, discount: newDiscount }
                         handleChange('promoCodes', newP)
                       }}
-                    />
-                    <span className="text-gray-500 font-bold">%</span>
+                      className="p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm bg-white"
+                    >
+                      <option value="percentage">Persen (%)</option>
+                      <option value="nominal">Nominal (Rp)</option>
+                      <option value="months">Bulan Gratis</option>
+                    </select>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        value={promo.discount}
+                        className="w-24 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm text-center"
+                        onChange={e => {
+                          let val = Number(e.target.value)
+                          const pType = promo.type || 'percentage'
+                          if (pType === 'percentage' && val > 100) val = 100
+                          const newP = [...current.promoCodes]
+                          newP[idx] = { ...newP[idx], discount: val }
+                          handleChange('promoCodes', newP)
+                        }}
+                      />
+                      <span className="text-gray-500 font-bold text-xs w-6">
+                        {(!promo.type || promo.type === 'percentage') ? '%' : (promo.type === 'nominal' ? 'Rp' : 'Bln')}
+                      </span>
+                    </div>
                   </div>
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
@@ -198,7 +221,7 @@ export default function ProductPricingPage() {
             </div>
             <button
               onClick={() => {
-                const newP = [...(current.promoCodes || []), { id: Date.now().toString(), code: '', discount: 0, isActive: true }]
+                const newP = [...(current.promoCodes || []), { id: Date.now().toString(), code: '', discount: 0, isActive: true, type: 'percentage' }]
                 handleChange('promoCodes', newP)
               }}
               className="flex items-center gap-2 text-[#1A7A7A] font-semibold text-sm hover:underline"
@@ -211,27 +234,44 @@ export default function ProductPricingPage() {
         {/* ── BASE PRICES ─────────────────────────────────────────────────── */}
         <section className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="font-bold text-gray-800 mb-5">Paket / Harga Dasar</h2>
-          <div className="space-y-4">
+          <div className="space-y-4 mb-4">
             {current.basePrices.map((item: any, idx: number) => (
               <div key={item.id} className="bg-gray-50 rounded-xl border border-gray-200 p-4">
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-3">
                   {/* Name / Area */}
-                  <input
-                    type="text"
-                    value={item.area ?? item.name ?? ''}
-                    placeholder="Nama Paket"
-                    className="flex-1 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm font-medium"
-                    onChange={e => {
-                      const newB = [...current.basePrices]
-                      if ('name' in newB[idx]) newB[idx] = { ...newB[idx], name: e.target.value }
-                      else newB[idx] = { ...newB[idx], area: e.target.value }
-                      handleChange('basePrices', newB)
-                    }}
-                  />
+                  <div className="flex-1 w-full">
+                    <input
+                      type="text"
+                      value={item.area ?? item.name ?? ''}
+                      placeholder="Nama Paket / Area"
+                      className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm font-medium"
+                      onChange={e => {
+                        const newB = [...current.basePrices]
+                        if ('name' in newB[idx]) newB[idx] = { ...newB[idx], name: e.target.value }
+                        else newB[idx] = { ...newB[idx], area: e.target.value }
+                        handleChange('basePrices', newB)
+                      }}
+                    />
+                    {isPos && (
+                      <label className="flex items-center gap-2 mt-2 cursor-pointer w-fit">
+                        <input
+                          type="checkbox"
+                          checked={item.isLokal ?? false}
+                          onChange={e => {
+                            const newB = [...current.basePrices]
+                            newB[idx] = { ...newB[idx], isLokal: e.target.checked }
+                            handleChange('basePrices', newB)
+                          }}
+                          className="w-4 h-4 rounded text-[#1A7A7A]"
+                        />
+                        <span className="text-xs font-semibold text-gray-600">Ini adalah area LOKAL (diberi badge khusus)</span>
+                      </label>
+                    )}
+                  </div>
 
                   {/* Standard price (non web-studio, non wa-blast) */}
                   {!isWebStudio && !isWaBlast && (
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0 mt-2 sm:mt-0">
                       <span className="text-gray-400 font-bold text-sm">Rp</span>
                       <input
                         type="number"
@@ -245,6 +285,18 @@ export default function ProductPricingPage() {
                       />
                     </div>
                   )}
+                  
+                  <button
+                    onClick={() => {
+                      if (current.basePrices.length <= 1) return alert('Minimal harus ada 1 harga dasar / area!')
+                      const newB = current.basePrices.filter((_: any, i: number) => i !== idx)
+                      handleChange('basePrices', newB)
+                    }}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition shrink-0"
+                    title="Hapus"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
 
                 {/* Web Studio matrix */}
@@ -332,67 +384,155 @@ export default function ProductPricingPage() {
               </div>
             ))}
           </div>
+          <button
+            onClick={() => {
+              const newId = Date.now().toString()
+              const newItem = isPos 
+                ? { id: newId, area: 'Area Baru', price: 0, isLokal: false }
+                : (isWebStudio 
+                    ? { id: newId, name: 'Paket Baru', desc: '', prices: { '0.5': 0, '1': 0, '2': 0, '3': 0 } }
+                    : { id: newId, name: 'Paket Baru', price: 0, original: 0, kontak: 0, badge: '' })
+              
+              const newB = [...current.basePrices, newItem]
+              handleChange('basePrices', newB)
+            }}
+            className="flex items-center gap-2 text-[#1A7A7A] font-semibold text-sm hover:underline"
+          >
+            <Plus size={14} /> Tambah Paket / Area
+          </button>
         </section>
 
         {/* ── ADD-ONS ─────────────────────────────────────────────────────── */}
-        {current.addons && current.addons.length > 0 && (
+        {current.addons !== undefined && (
           <section className="bg-white rounded-2xl border border-gray-200 p-6">
             <h2 className="font-bold text-gray-800 mb-5">Add-ons (Opsional)</h2>
             <div className="space-y-3 mb-4">
               {current.addons.map((addon: any, idx: number) => (
-                <div key={addon.id} className="flex flex-col sm:flex-row gap-3 items-center bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <input
-                    type="text"
-                    value={addon.name}
-                    className="flex-1 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
-                    onChange={e => {
-                      const newA = [...current.addons]
-                      newA[idx] = { ...newA[idx], name: e.target.value }
-                      handleChange('addons', newA)
-                    }}
-                  />
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-gray-400 text-sm">Rp</span>
+                <div key={addon.id} className="flex flex-col gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                  {/* Name and Price */}
+                  <div className="flex flex-col sm:flex-row gap-3 items-center">
                     <input
-                      type="number"
-                      value={addon.price}
-                      className="w-32 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
+                      type="text"
+                      value={addon.name}
+                      placeholder="Nama Add-on"
+                      className="flex-1 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm font-semibold"
                       onChange={e => {
                         const newA = [...current.addons]
-                        newA[idx] = { ...newA[idx], price: Number(e.target.value) }
+                        newA[idx] = { ...newA[idx], name: e.target.value }
                         handleChange('addons', newA)
                       }}
                     />
-                  </div>
-                  {addon.type !== undefined && (
-                    <select
-                      value={addon.type}
-                      className="p-2.5 rounded-lg border border-gray-300 text-sm"
-                      onChange={e => {
-                        const newA = [...current.addons]
-                        newA[idx] = { ...newA[idx], type: e.target.value }
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-gray-400 text-sm font-bold">Rp</span>
+                      <input
+                        type="number"
+                        value={addon.price}
+                        className="w-32 p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
+                        onChange={e => {
+                          const newA = [...current.addons]
+                          newA[idx] = { ...newA[idx], price: Number(e.target.value) }
+                          handleChange('addons', newA)
+                        }}
+                      />
+                    </div>
+                    {addon.type !== undefined && (
+                      <select
+                        value={addon.type}
+                        className="p-2.5 rounded-lg border border-gray-300 text-sm"
+                        onChange={e => {
+                          const newA = [...current.addons]
+                          newA[idx] = { ...newA[idx], type: e.target.value }
+                          handleChange('addons', newA)
+                        }}
+                      >
+                        <option value="flat">Sekali Bayar</option>
+                        <option value="yearly">Per Tahun</option>
+                      </select>
+                    )}
+                    <button
+                      onClick={() => {
+                        const newA = current.addons.filter((_: any, i: number) => i !== idx)
                         handleChange('addons', newA)
                       }}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
                     >
-                      <option value="flat">Sekali Bayar</option>
-                      <option value="yearly">Per Tahun</option>
-                    </select>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                  
+                  {/* Extra fields for POS (Category, Description, Icon) */}
+                  {isPos && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-gray-200 mt-1">
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 block mb-1">Kategori</label>
+                        <input
+                          type="text"
+                          value={addon.cat ?? ''}
+                          placeholder="Misal: Operasional"
+                          className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
+                          onChange={e => {
+                            const newA = [...current.addons]
+                            newA[idx] = { ...newA[idx], cat: e.target.value }
+                            handleChange('addons', newA)
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 block mb-1">Deskripsi Singkat</label>
+                        <input
+                          type="text"
+                          value={addon.desc ?? ''}
+                          placeholder="Penjelasan fitur..."
+                          className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
+                          onChange={e => {
+                            const newA = [...current.addons]
+                            newA[idx] = { ...newA[idx], desc: e.target.value }
+                            handleChange('addons', newA)
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-gray-500 block mb-1">Nama Ikon (Lucide)</label>
+                        <input
+                          type="text"
+                          value={addon.iconName ?? ''}
+                          placeholder="Misal: Coffee, Package, PieChart"
+                          className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
+                          onChange={e => {
+                            const newA = [...current.addons]
+                            newA[idx] = { ...newA[idx], iconName: e.target.value }
+                            handleChange('addons', newA)
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Optional check for oneTime */}
+                      <label className="md:col-span-3 flex items-center gap-2 cursor-pointer w-fit mt-1">
+                        <input
+                          type="checkbox"
+                          checked={addon.oneTime ?? false}
+                          onChange={e => {
+                            const newA = [...current.addons]
+                            newA[idx] = { ...newA[idx], oneTime: e.target.checked }
+                            handleChange('addons', newA)
+                          }}
+                          className="w-4 h-4 rounded text-[#1A7A7A]"
+                        />
+                        <span className="text-sm font-semibold text-gray-700">Ini pembayaran 1x (bukan langganan bulanan)</span>
+                      </label>
+                    </div>
                   )}
-                  <button
-                    onClick={() => {
-                      const newA = current.addons.filter((_: any, i: number) => i !== idx)
-                      handleChange('addons', newA)
-                    }}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                  >
-                    <Trash2 size={16} />
-                  </button>
                 </div>
               ))}
             </div>
             <button
               onClick={() => {
-                const newA = [...current.addons, { id: Date.now().toString(), name: 'Add-on Baru', price: 0 }]
+                const newA = [...current.addons, { 
+                  id: Date.now().toString(), 
+                  name: 'Add-on Baru', 
+                  price: 0,
+                  ...(isPos ? { cat: 'Kategori Baru', desc: '', iconName: 'Box', iconBg: 'bg-gray-100', iconColor: 'text-gray-600' } : {})
+                }]
                 handleChange('addons', newA)
               }}
               className="flex items-center gap-2 text-[#1A7A7A] font-semibold text-sm hover:underline"

@@ -184,7 +184,7 @@ export default function ValetIndonesiaPage() {
               </div>
               <PromoCodeInput
                 promoCodes={pricing.promoCodes}
-                onApply={(d, c) => { setPromoDiscount(d); setAppliedPromo(c) }}
+                onApply={(promo) => { setPromoDiscount(promo.discount); setAppliedPromo(promo.code) }}
                 onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
               />
             </div>

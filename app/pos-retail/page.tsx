@@ -11,8 +11,8 @@ import * as LucideIcons from 'lucide-react'
 import PromoCodeInput from '@/components/PromoCodeInput'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface AreaPrice  { id: string; area: string; price: number }
-interface PromoCode  { id: string; code: string; discount: number; isActive: boolean }
+interface AreaPrice  { id: string; area: string; price: number; isLokal?: boolean }
+interface PromoCode  { id: string; code: string; discount: number; isActive: boolean; type?: 'percentage' | 'nominal' | 'months' }
 
 interface PricingData {
   basePrices:  AreaPrice[]
@@ -39,8 +39,6 @@ const DURATIONS = [
   { value: 6,  payMonths: 5,  label: '6 Bulan',  sublabel: 'Bayar 5, aktif 6 bln',  bonus: 1, tag: 'Gratis 1 Bulan' },
   { value: 12, payMonths: 10, label: '1 Tahun',  sublabel: 'Bayar 10, aktif 12 bln', bonus: 2, tag: 'Gratis 2 Bulan' },
 ]
-
-const CAT_ORDER = ['Operasional', 'Pelanggan Setia', 'Karyawan & Laporan', 'Cabang Ekstra', 'Sekali Bayar']
 
 const fmt = (n: number) =>
   new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
@@ -106,8 +104,7 @@ export default function PosRetailPage() {
   const [duration, setDuration]           = useState(12)
   const [selectedAddons, setSelectedAddons] = useState<string[]>([])
   const [extraBranchCount, setExtraBranchCount] = useState(0)
-  const [promoDiscount, setPromoDiscount] = useState(0)
-  const [appliedPromo, setAppliedPromo]   = useState('')
+  const [appliedPromo, setAppliedPromo]   = useState<PromoCode | null>(null)
   const [openCats, setOpenCats]           = useState<string[]>(['Operasional'])  // accordion state
 
   useEffect(() => {
@@ -132,7 +129,7 @@ export default function PosRetailPage() {
   const toggleCat = (cat: string) =>
     setOpenCats(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat])
 
-  const durCfg  = DURATIONS.find(d => d.value === duration)!
+  const durCfg  = DURATIONS.find(d => d.value === duration) ?? { value: 0, payMonths: 0, label: 'Custom', sublabel: 'Hubungi Kami', bonus: 0, tag: '' }
   const areaObj = pricing.basePrices.find(b => b.id === selectedArea) ?? pricing.basePrices[0]
   const corePrice = areaObj?.price ?? 50000
 
@@ -159,15 +156,27 @@ export default function PosRetailPage() {
   , [selectedAddons])
 
   const subtotal          = totalMonthly * durCfg.payMonths
-  const promoAmt          = Math.round(subtotal * promoDiscount / 100)
-  const finalTotal        = subtotal - promoAmt + oneTimeTotal
-
+  let promoAmt = 0
+  let promoBonusMonths = 0
+  if (appliedPromo) {
+    const pType = appliedPromo.type || 'percentage'
+    if (pType === 'percentage') {
+      promoAmt = Math.round(subtotal * (appliedPromo.discount / 100))
+    } else if (pType === 'nominal') {
+      promoAmt = appliedPromo.discount
+    } else if (pType === 'months') {
+      promoBonusMonths = appliedPromo.discount
+    }
+  }
+  promoAmt = Math.min(subtotal, promoAmt) // Prevent negative total
+  const finalTotal        = Math.max(0, subtotal - promoAmt + oneTimeTotal)
+  const totalBonusMonths  = durCfg.bonus + promoBonusMonths
   const waMsg = encodeURIComponent(
     `Halo LOKAL! Saya tertarik dengan Lokal Retail.\n\n📍 Area: ${areaObj?.area}\n⏱ Durasi: ${durCfg.label}${durCfg.bonus > 0 ? ` (Bayar ${durCfg.payMonths} bulan, gratis ${durCfg.bonus} bulan)` : ''}\n🔧 Add-ons: ${selectedAddons.length > 0 ? selectedAddons.map(id => pricing.addons.find(a => a.id === id)?.name).join(', ') : 'Tidak ada'}${extraBranchCount > 0 ? `\n🏢 Cabang Ekstra: ${extraBranchCount} cabang` : ''}\n💰 Estimasi Total: ${fmt(finalTotal)}\n\nBoleh minta info lebih lanjut?`
   )
 
   // ─── Summary Box (shared markup, used in sidebar & bottom sheet) ──────────
-  function SummaryContent({ compact = false }: { compact?: boolean }) {
+  function SummaryContent({ compact = false, hideButton = false }: { compact?: boolean, hideButton?: boolean }) {
     return (
       <div className={compact ? '' : 'p-5 space-y-2.5'}>
         {!compact && (
@@ -194,10 +203,10 @@ export default function PosRetailPage() {
                 <span className="font-bold shrink-0">{fmt(extraBranchPrice * extraBranchCount * durCfg.payMonths)}</span>
               </div>
             )}
-            {durCfg.bonus > 0 && (
+            {totalBonusMonths > 0 && (
               <div className="flex justify-between text-sm text-emerald-600 bg-emerald-50 px-3 py-2 rounded-lg font-medium">
                 <span>Gratis Akses</span>
-                <span>+{durCfg.bonus} Bulan</span>
+                <span>+{totalBonusMonths} Bulan</span>
               </div>
             )}
             {oneTimeTotal > 0 && (
@@ -209,30 +218,32 @@ export default function PosRetailPage() {
             <div className="pt-2 border-t border-gray-100">
               <PromoCodeInput
                 promoCodes={pricing.promoCodes}
-                onApply={(d, c) => { setPromoDiscount(d); setAppliedPromo(c) }}
-                onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
+                onApply={(promo) => setAppliedPromo(promo)}
+                onClear={() => setAppliedPromo(null)}
               />
             </div>
-            {promoDiscount > 0 && (
+            {appliedPromo && promoAmt > 0 && (
               <div className="flex justify-between text-sm text-emerald-600">
-                <span>Kode promo ({appliedPromo})</span>
+                <span>Kode promo ({appliedPromo.code})</span>
                 <span>-{fmt(promoAmt)}</span>
               </div>
             )}
             <div className="flex justify-between font-extrabold text-lg pt-2 border-t-2 border-gray-100">
               <span>Total</span>
-              <span className="text-[#1A7A7A]">{fmt(finalTotal)}</span>
+              <span className="text-[#1A7A7A]">{duration === 0 ? 'Hubungi Sales' : fmt(finalTotal)}</span>
             </div>
           </>
         )}
-        <a
-          href={`https://wa.me/${WA}?text=${waMsg}`}
-          target="_blank" rel="noopener noreferrer"
-          className={`block w-full text-center bg-[#E8681A] hover:bg-[#c95914] text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-[#E8681A]/25 ${compact ? '' : 'mt-2'}`}
-        >
-          Mulai Berlangganan
-        </a>
-        {!compact && <p className="text-center text-xs text-gray-400">Estimasi. Tim kami konfirmasi sebelum penagihan.</p>}
+        {!hideButton && (
+          <a
+            href={`https://wa.me/${WA}?text=${waMsg}`}
+            target="_blank" rel="noopener noreferrer"
+            className={`block w-full text-center bg-[#E8681A] hover:bg-[#c95914] text-white font-bold py-3.5 rounded-xl transition shadow-md shadow-[#E8681A]/25 ${compact ? '' : 'mt-2'}`}
+          >
+            Mulai Berlangganan
+          </a>
+        )}
+        {!compact && !hideButton && <p className="text-center text-xs text-gray-400">Estimasi. Tim kami konfirmasi sebelum penagihan.</p>}
       </div>
     )
   }
@@ -399,7 +410,14 @@ export default function PosRetailPage() {
                           {selectedArea === area.id && <div className="w-1.5 h-1.5 bg-white rounded-full" />}
                         </div>
                         <input type="radio" className="sr-only" checked={selectedArea === area.id} onChange={() => setSelectedArea(area.id)} />
-                        <span className={`font-semibold text-sm ${selectedArea === area.id ? 'text-[#1A7A7A]' : 'text-gray-700'}`}>{area.area}</span>
+                        <span className={`font-semibold text-sm ${selectedArea === area.id ? 'text-[#1A7A7A]' : 'text-gray-700'}`}>
+                          {area.area}
+                        </span>
+                        {area.isLokal && (
+                          <span className="bg-[#1A7A7A]/10 text-[#1A7A7A] text-[10px] font-bold px-2 py-0.5 rounded ml-1 uppercase tracking-wider">
+                            LOKAL Area
+                          </span>
+                        )}
                       </div>
                       <span className={`font-extrabold text-sm shrink-0 ${selectedArea === area.id ? 'text-[#1A7A7A]' : 'text-gray-600'}`}>
                         {fmt(area.price)}<span className="text-xs font-normal text-gray-400">/bln</span>
@@ -434,16 +452,22 @@ export default function PosRetailPage() {
                         </span>
                       )}
                       <div className={`font-bold text-sm ${duration === opt.value ? 'text-[#1A7A7A]' : 'text-gray-700'}`}>{opt.label}</div>
-                      {opt.bonus > 0 && (
-                        <div className="flex items-center justify-center gap-0.5 mt-1">
-                          <Gift size={10} className="text-[#E8681A]" />
-                          <span className="text-[9px] text-[#E8681A] font-bold">+{opt.bonus} bln gratis</span>
-                        </div>
-                      )}
+
                       <div className="text-[9px] text-gray-400 mt-0.5 leading-tight">{opt.sublabel}</div>
                     </button>
                   ))}
                 </div>
+                <button
+                  onClick={() => setDuration(0)}
+                  className={`mt-2.5 w-full relative rounded-xl py-3 px-2 text-center border-2 transition-all ${
+                    duration === 0
+                      ? 'border-[#1A7A7A] bg-[#1A7A7A]/5'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className={`font-bold text-sm ${duration === 0 ? 'text-[#1A7A7A]' : 'text-gray-700'}`}>Custom</div>
+                  <div className="text-[9px] text-gray-400 mt-0.5 leading-tight">Lebih dari 1 tahun / Jumlah outlet banyak (Hubungi Kami)</div>
+                </button>
               </div>
 
               {/* STEP 3: Add-ons — accordion by category */}
@@ -457,7 +481,7 @@ export default function PosRetailPage() {
                   </h3>
                 </div>
 
-                {CAT_ORDER.map((cat, catIdx) => {
+                {Array.from(new Set(pricing.addons.map((a: any) => a.cat))).map((cat: any, catIdx: number) => {
                   const items     = pricing.addons.filter((a: any) => a.cat === cat)
                   const isOneTime = cat === 'Sekali Bayar'
                   const isOpen    = openCats.includes(cat)
@@ -512,19 +536,23 @@ export default function PosRetailPage() {
               </div>
             </div>
 
+            {/* Mobile Summary & Promo (visible only on mobile) */}
+            <div className="lg:hidden mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-6 relative z-50">
+              <div className="bg-gradient-to-br from-[#0d2d2d] to-[#1A7A7A] text-white p-5">
+                <div className="text-sm text-white/70 mb-1">Estimasi Total Anda</div>
+                <div className="text-3xl font-extrabold">{duration === 0 ? 'Hubungi Sales' : fmt(finalTotal)}</div>
+                <div className="text-xs text-white/60 mt-1">untuk {duration} bulan</div>
+              </div>
+              <SummaryContent hideButton={true} />
+            </div>
+
             {/* ─ Right: Summary sidebar (desktop only) ─────────────────── */}
             <div className="lg:col-span-2 hidden lg:block">
               <div className="lg:sticky lg:top-24 bg-white rounded-2xl border border-gray-200 shadow-xl overflow-hidden">
                 <div className="bg-gradient-to-br from-[#0d2d2d] to-[#1A7A7A] text-white p-5">
                   <div className="text-sm text-white/70 mb-1">Estimasi Total Anda</div>
-                  <div className="text-3xl font-extrabold">{fmt(finalTotal)}</div>
-                  {durCfg.bonus > 0 ? (
-                    <div className="flex items-center gap-1.5 mt-2 bg-[#E8681A]/20 text-[#E8681A] text-xs font-bold px-3 py-1.5 rounded-full w-fit">
-                      <Gift size={12} /> Aktif {duration} bulan (Hanya bayar {durCfg.payMonths} bulan!)
-                    </div>
-                  ) : (
-                    <div className="text-xs text-white/60 mt-1">untuk {duration} bulan</div>
-                  )}
+                  <div className="text-3xl font-extrabold">{duration === 0 ? 'Hubungi Sales' : fmt(finalTotal)}</div>
+                  <div className="text-xs text-white/60 mt-1">untuk {duration} bulan</div>
                 </div>
                 <SummaryContent />
               </div>
@@ -543,13 +571,8 @@ export default function PosRetailPage() {
           <div className="flex items-center justify-between mb-2.5">
             <div>
               <div className="text-xs text-gray-500">Estimasi Total</div>
-              <div className="text-xl font-extrabold text-[#1A7A7A] leading-tight">{fmt(finalTotal)}</div>
-              {durCfg.bonus > 0 && (
-                <div className="flex items-center gap-1 mt-0.5">
-                  <Gift size={10} className="text-[#E8681A]" />
-                  <span className="text-[10px] text-[#E8681A] font-bold">Aktif {duration}bln · Bayar {durCfg.payMonths}bln</span>
-                </div>
-              )}
+              <div className="text-xl font-extrabold text-[#1A7A7A] leading-tight">{duration === 0 ? 'Hubungi Sales' : fmt(finalTotal)}</div>
+
             </div>
             {/* Mini breakdown badge */}
             <div className="text-right text-xs text-gray-400 space-y-0.5">
