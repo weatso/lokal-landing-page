@@ -3,47 +3,10 @@
 import { useState, useEffect } from 'react'
 import { ExternalLink, MessageCircle, ShieldCheck, Tag, SmartphoneNfc, Clock, LineChart, Camera } from 'lucide-react'
 import Image from 'next/image'
-import PromoCodeInput from '@/components/PromoCodeInput'
-
-interface PromoCode  { id: string; code: string; discount: number; isActive: boolean }
-interface PricingData { basePrices: { id: string; area: string; price: number }[]; promoCodes: PromoCode[] }
-
-const DEFAULT: PricingData = {
-  basePrices:  [
-    { id: '1', area: 'Harga Standar', price: 999000 },
-    { id: '2', area: 'Harga Promo',  price: 299000 },
-  ],
-  promoCodes: [{ id: 'p1', code: 'VALET2024', discount: 25, isActive: true }],
-}
-
-const fmt = (p: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(p)
-
-const MONTHLY_PRICE = 999000
-const MONTHLY_FEATURES = ['Valet & Parkir (tiket masuk, checkout, invoice)', 'Presensi staf & histori transaksi', 'Branding venue (nama, alamat, logo)', 'Laporan operasional + reprint + e-ticket']
-const CUSTOM_FEATURES  = ['Harga spesial untuk 2+ lokasi (penawaran korporat)', 'Branding khusus + kebutuhan operasional venue', 'Proses berlangganan & pembayaran via WhatsApp resmi']
 
 export default function ValetIndonesiaPage() {
-  const [pricing, setPricing]           = useState<PricingData>(DEFAULT)
-  const [promoDiscount, setPromoDiscount] = useState(0)
-  const [appliedPromo, setAppliedPromo]   = useState('')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('lokal_pricing_data')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Record<string, PricingData>
-        if (parsed['valet-indonesia']) {
-          const d = parsed['valet-indonesia']
-          if (!d.promoCodes) d.promoCodes = DEFAULT.promoCodes
-          setPricing(d)
-        }
-      } catch { /* use defaults */ }
-    }
-  }, [])
-
-  const handleConsultation = (paket = '') => {
-    const promoText = appliedPromo ? ` (Kode Promo: ${appliedPromo}, Diskon ${promoDiscount}%)` : ''
-    const msg = `Halo LOKAL, saya tertarik dengan ${paket || 'sistem Valet Indonesia'}${promoText}. Mohon info cara berlangganan dan pembayarannya.`
+  const handleConsultation = () => {
+    const msg = `Halo LOKAL, saya tertarik dengan sistem Valet Indonesia. Mohon info cara berlangganan dan pembayarannya.`
     window.open(`https://wa.me/6285111326098?text=${msg}`, '_blank')
   }
 
@@ -77,7 +40,7 @@ export default function ValetIndonesiaPage() {
                 Platform SaaS untuk operasional valet/parkir: alur kendaraan masuk-keluar, check-in dengan kamera AI, reprint invoice, laporan arus, hingga presensi staf.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#pricing" className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/30 flex items-center justify-center">Lihat Harga & Promo</a>
+                <a href="#promo" className="bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/30 flex items-center justify-center">Konsultasi Sekarang</a>
                 <a href="https://valetindonesia.com/demo/?demo_role=admin" target="_blank" rel="noopener noreferrer" className="bg-white text-indigo-600 border-2 border-indigo-100 px-8 py-4 rounded-xl font-bold hover:bg-indigo-50 transition flex items-center justify-center">
                   Coba Demo Live <ExternalLink size={16} className="ml-1" />
                 </a>
@@ -168,72 +131,7 @@ export default function ValetIndonesiaPage() {
           </div>
         </section>
 
-        {/* Pricing */}
-        <section id="pricing" className="max-w-5xl mx-auto px-4 mb-24">
-          <div className="text-center mb-12">
-            <div className="inline-block bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-sm font-bold mb-4">Price List</div>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Paket Valet Indonesia</h2>
-            <p className="text-gray-600 max-w-xl mx-auto">Paket siap live untuk operasional valet dan parkir.</p>
-          </div>
 
-          {pricing.promoCodes.length > 0 && (
-            <div className="max-w-xl mx-auto mb-10">
-              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 mb-4 text-center">
-                <div className="text-xs font-bold text-indigo-500 uppercase tracking-widest mb-1">Kupon Promo Paket Bulanan</div>
-                <div className="text-xs text-gray-500">Klik Terapkan untuk mengaktifkan harga promo.</div>
-              </div>
-              <PromoCodeInput
-                promoCodes={pricing.promoCodes}
-                onApply={(promo) => { setPromoDiscount(promo.discount); setAppliedPromo(promo.code) }}
-                onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
-              />
-            </div>
-          )}
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {/* Monthly All-in */}
-            <div className="bg-white rounded-3xl p-8 border-2 border-indigo-500 shadow-xl shadow-indigo-500/10 flex flex-col">
-              <div className="text-xs font-black text-indigo-600 bg-indigo-50 border border-indigo-200 px-3 py-1 rounded-full self-start mb-4">PAKET BULANAN</div>
-              <h3 className="text-2xl font-black text-gray-900 mb-1">All-in</h3>
-              <div className="my-5 pb-5 border-b border-gray-100">
-                {promoDiscount > 0 && <div className="text-sm text-gray-400 line-through mb-0.5">{fmt(MONTHLY_PRICE)}/bulan</div>}
-                <div className={`text-4xl font-black ${promoDiscount > 0 ? 'text-green-600' : 'text-indigo-600'}`}>
-                  {fmt(MONTHLY_PRICE * (1 - promoDiscount / 100))}<span className="text-base font-semibold text-gray-400"> / bulan</span>
-                </div>
-                {promoDiscount > 0 && <div className="text-xs text-green-600 font-bold mt-1">Diskon {promoDiscount}% aktif ✓</div>}
-              </div>
-              <ul className="flex-1 space-y-3 mb-8">
-                {MONTHLY_FEATURES.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 mt-0.5">{CHECKMARK}</div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => handleConsultation(`Valet All-In — ${fmt(MONTHLY_PRICE * (1 - promoDiscount / 100))}/bulan`)} className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-600/30">
-                Konsultasi via WhatsApp
-              </button>
-            </div>
-
-            {/* Custom */}
-            <div className="bg-gray-900 rounded-3xl p-8 border border-gray-800 flex flex-col">
-              <div className="text-xs font-black text-gray-400 bg-gray-800 border border-gray-700 px-3 py-1 rounded-full self-start mb-4">CUSTOM</div>
-              <h3 className="text-2xl font-black text-white mb-1">Contact Us</h3>
-              <p className="text-gray-400 text-sm mb-5">multi lokasi / kebutuhan khusus</p>
-              <ul className="flex-1 space-y-3 mb-8">
-                {CUSTOM_FEATURES.map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-400">
-                    <div className="w-4 h-4 rounded-full bg-gray-700 text-gray-300 flex items-center justify-center shrink-0 mt-0.5">{CHECKMARK}</div>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => handleConsultation('Custom / Multi Lokasi Valet Indonesia')} className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20 py-4 rounded-xl font-bold transition">
-                Konsultasi via WhatsApp
-              </button>
-            </div>
-          </div>
-        </section>
 
         {/* Promo Bridge */}
         <section id="promo" className="max-w-4xl mx-auto px-4 mb-16">

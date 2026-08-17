@@ -13,6 +13,16 @@ const fmt = (n: number) =>
 
 type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
 
+const ADDON_CATEGORIES = [
+  'Fitur Kasir & Dapur',
+  'Karyawan & Laporan',
+  'Pelanggan Setia',
+  'Cabang Ekstra',
+  'Operasional',
+  'Sekali Bayar',
+  'Lainnya'
+]
+
 export default function ProductPricingPage() {
   const { product } = useParams<{ product: string }>()
   const router = useRouter()
@@ -423,7 +433,22 @@ export default function ProductPricingPage() {
                       }}
                     />
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-gray-400 text-sm font-bold">Rp</span>
+                      {isPos ? (
+                        <select
+                          value={addon.priceType || 'nominal'}
+                          onChange={e => {
+                            const newA = [...current.addons]
+                            newA[idx] = { ...newA[idx], priceType: e.target.value }
+                            handleChange('addons', newA)
+                          }}
+                          className="p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm font-bold bg-gray-50 text-gray-500"
+                        >
+                          <option value="nominal">Rp</option>
+                          <option value="percentage">%</option>
+                        </select>
+                      ) : (
+                        <span className="text-gray-400 text-sm font-bold">Rp</span>
+                      )}
                       <input
                         type="number"
                         value={addon.price}
@@ -465,17 +490,19 @@ export default function ProductPricingPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-gray-200 mt-1">
                       <div>
                         <label className="text-xs font-bold text-gray-500 block mb-1">Kategori</label>
-                        <input
-                          type="text"
-                          value={addon.cat ?? ''}
-                          placeholder="Misal: Operasional"
+                        <select
+                          value={addon.cat ?? 'Lainnya'}
                           className="w-full p-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#1A7A7A] text-sm"
                           onChange={e => {
                             const newA = [...current.addons]
                             newA[idx] = { ...newA[idx], cat: e.target.value }
                             handleChange('addons', newA)
                           }}
-                        />
+                        >
+                          {ADDON_CATEGORIES.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label className="text-xs font-bold text-gray-500 block mb-1">Deskripsi Singkat</label>

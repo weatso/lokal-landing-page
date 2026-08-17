@@ -48,7 +48,7 @@ const WA = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 // ─── Compact addon row (mobile) ───────────────────────────────────────────────
 function AddonRow({
   addon, isSelected, onToggle,
-  extraBranchCount, setExtraBranchCount, extraBranchPrice,
+  extraBranchCount, setExtraBranchCount, extraBranchPrice, corePrice
 }: {
   addon: any
   isSelected: boolean
@@ -56,10 +56,16 @@ function AddonRow({
   extraBranchCount: number
   setExtraBranchCount: (fn: (c: number) => number) => void
   extraBranchPrice: number
+  corePrice: number
 }) {
   const isOneTime = addon.oneTime
   const isDynamic = addon.dynamic
   const Icon = (LucideIcons as any)[addon.iconName] || LucideIcons.Box
+
+  let displayPrice = addon.price
+  if (addon.priceType === 'percentage' && !isDynamic) {
+    displayPrice = Math.round(corePrice * (addon.price / 100))
+  }
 
   if (isDynamic) {
     return (
@@ -88,7 +94,7 @@ function AddonRow({
       <div className="flex-1 min-w-0 text-left">
         <div className="font-semibold text-sm text-gray-800 leading-snug truncate">{addon.name}</div>
         <div className={`text-xs font-bold ${isSelected ? 'text-[#1A7A7A]' : 'text-gray-500'}`}>
-          {fmt(addon.price)}<span className="font-normal text-gray-400">{isOneTime ? ' sekali bayar' : '/bln'}</span>
+          {fmt(displayPrice)}<span className="font-normal text-gray-400">{isOneTime ? ' sekali bayar' : '/bln'}</span>
         </div>
       </div>
       <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-[#1A7A7A] border-[#1A7A7A]' : 'border-gray-300 bg-white'}`}>
@@ -512,15 +518,16 @@ export default function PosBeautyPage() {
                       {isOpen && (
                         <div className="px-4 pb-4 space-y-2.5">
                           {items.map((addon: any) => (
-                            <AddonRow
-                              key={addon.id}
-                              addon={addon}
-                              isSelected={selectedAddons.includes(addon.id)}
-                              onToggle={() => toggleAddon(addon.id)}
-                              extraBranchCount={extraBranchCount}
-                              setExtraBranchCount={setExtraBranchCount}
-                              extraBranchPrice={extraBranchPrice}
-                            />
+                              <AddonRow
+                                key={addon.id}
+                                addon={addon}
+                                isSelected={selectedAddons.includes(addon.id)}
+                                onToggle={() => toggleAddon(addon.id)}
+                                extraBranchCount={extraBranchCount}
+                                setExtraBranchCount={setExtraBranchCount}
+                                extraBranchPrice={extraBranchPrice}
+                                corePrice={corePrice}
+                              />
                           ))}
                         </div>
                       )}

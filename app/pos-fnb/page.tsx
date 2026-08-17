@@ -48,7 +48,7 @@ const WA = process.env.NEXT_PUBLIC_WA_NUMBER ?? '6285111326098'
 // ─── Compact addon row (mobile) ───────────────────────────────────────────────
 function AddonRow({
   addon, isSelected, onToggle,
-  extraBranchCount, setExtraBranchCount, extraBranchPrice,
+  extraBranchCount, setExtraBranchCount, extraBranchPrice, corePrice
 }: {
   addon: any
   isSelected: boolean
@@ -56,10 +56,16 @@ function AddonRow({
   extraBranchCount: number
   setExtraBranchCount: (fn: (c: number) => number) => void
   extraBranchPrice: number
+  corePrice: number
 }) {
   const isOneTime = addon.oneTime
   const isDynamic = addon.dynamic
   const Icon = (LucideIcons as any)[addon.iconName] || LucideIcons.Box
+
+  let displayPrice = addon.price
+  if (addon.priceType === 'percentage' && !isDynamic) {
+    displayPrice = Math.round(corePrice * (addon.price / 100))
+  }
 
   if (isDynamic) {
     return (
@@ -88,7 +94,7 @@ function AddonRow({
       <div className="flex-1 min-w-0 text-left">
         <div className="font-semibold text-sm text-gray-800 leading-snug truncate">{addon.name}</div>
         <div className={`text-xs font-bold ${isSelected ? 'text-[#1A7A7A]' : 'text-gray-500'}`}>
-          {fmt(addon.price)}<span className="font-normal text-gray-400">{isOneTime ? ' sekali bayar' : '/bln'}</span>
+          {fmt(displayPrice)}<span className="font-normal text-gray-400">{isOneTime ? ' sekali bayar' : '/bln'}</span>
         </div>
       </div>
       <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-[#1A7A7A] border-[#1A7A7A]' : 'border-gray-300 bg-white'}`}>
@@ -140,20 +146,34 @@ export default function PosFnbPage() {
   const monthlyRecurring = useMemo(() =>
     recurringAddons.reduce((sum, id) => {
       const a = pricing.addons.find(x => x.id === id)!
-      return sum + a.price
+      const p = (a as any).priceType === 'percentage' ? Math.round(corePrice * (a.price / 100)) : a.price
+      return sum + p
     }, 0)
-  , [recurringAddons])
+  , [recurringAddons, corePrice])
 
   const mainBranchMonthly  = corePrice + monthlyRecurring
-  const extraBranchPrice   = Math.round(mainBranchMonthly * 0.75)
+  
+  const extraBranchAddon = pricing.addons.find(x => x.id === 'extra-branch')
+  let extraBranchMultiplier = 0.75
+  if (extraBranchAddon && (extraBranchAddon as any).priceType === 'percentage') {
+    extraBranchMultiplier = extraBranchAddon.price / 100
+  }
+  const extraBranchPrice = extraBranchAddon && (extraBranchAddon as any).priceType === 'nominal'
+    ? extraBranchAddon.price
+    : Math.round(mainBranchMonthly * extraBranchMultiplier)
+    
   const totalMonthly       = mainBranchMonthly + (extraBranchCount * extraBranchPrice)
 
   const oneTimeTotal = useMemo(() =>
     selectedAddons.reduce((sum, id) => {
       const a = pricing.addons.find(x => x.id === id)
-      return a && (a as any).oneTime ? sum + a.price : sum
+      if (a && (a as any).oneTime) {
+        const p = (a as any).priceType === 'percentage' ? Math.round(corePrice * (a.price / 100)) : a.price
+        return sum + p
+      }
+      return sum
     }, 0)
-  , [selectedAddons])
+  , [selectedAddons, corePrice])
 
   const subtotal          = totalMonthly * durCfg.payMonths
   let promoAmt = 0
@@ -190,10 +210,11 @@ export default function PosFnbPage() {
             </div>
             {recurringAddons.map(id => {
               const a = pricing.addons.find(x => x.id === id)!
+              const p = (a as any).priceType === 'percentage' ? Math.round(corePrice * (a.price / 100)) : a.price
               return (
                 <div key={id} className="flex justify-between text-sm">
                   <span className="text-gray-500 truncate mr-2">{a.name} × {durCfg.payMonths}bln</span>
-                  <span className="font-semibold shrink-0">{fmt(a.price * durCfg.payMonths)}</span>
+                  <span className="font-semibold shrink-0">{fmt(p * durCfg.payMonths)}</span>
                 </div>
               )
             })}
@@ -490,15 +511,16 @@ export default function PosFnbPage() {
                       {isOpen && (
                         <div className="px-4 pb-4 space-y-2.5">
                           {items.map((addon: any) => (
-                            <AddonRow
-                              key={addon.id}
-                              addon={addon}
-                              isSelected={selectedAddons.includes(addon.id)}
-                              onToggle={() => toggleAddon(addon.id)}
-                              extraBranchCount={extraBranchCount}
-                              setExtraBranchCount={setExtraBranchCount}
-                              extraBranchPrice={extraBranchPrice}
-                            />
+                              <AddonRow
+                                key={addon.id}
+                                addon={addon}
+                                isSelected={selectedAddons.includes(addon.id)}
+                                onToggle={() => toggleAddon(addon.id)}
+                                extraBranchCount={extraBranchCount}
+                                setExtraBranchCount={setExtraBranchCount}
+                                extraBranchPrice={extraBranchPrice}
+                                corePrice={corePrice}
+                              />
                           ))}
                         </div>
                       )}

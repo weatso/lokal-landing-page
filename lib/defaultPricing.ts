@@ -14,7 +14,7 @@ export const DEFAULT_PRICING = {
       { id: 'keuangan',      cat: 'Karyawan & Laporan',    name: 'Dashboard Keuangan',                 price: 75000, iconName: 'PieChart',  iconBg: 'bg-blue-100',   iconColor: 'text-blue-600',   desc: 'Laporan Laba/Rugi bersih, bukan sekadar omzet.' },
       { id: 'crm',           cat: 'Pelanggan Setia',       name: 'Data Pelanggan & Loyalty',           price: 45000, iconName: 'Heart',     iconBg: 'bg-pink-100',   iconColor: 'text-pink-600',   desc: 'Catat pelanggan, riwayat, poin, & diskon khusus.' },
       { id: 'pager-digital', cat: 'Pelanggan Setia',       name: 'Layar Antrean (Digital Pager)',      price: 25000, iconName: 'Tv2',       iconBg: 'bg-cyan-100',   iconColor: 'text-cyan-600',   desc: 'Tampilan nomor antrean pesanan di Smart TV.' },
-      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                 price: 0, dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
+      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                 price: 75, priceType: 'percentage', dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
       { id: 'pager-fisik',   cat: 'Sekali Bayar',          name: 'Integrasi Alat Pager Fisik',         price: 350000, oneTime: true, iconName: 'Vibrate', iconBg: 'bg-gray-100', iconColor: 'text-gray-600', desc: 'Sambungkan sistem ke alat pager yang bergetar.' },
       { id: 'migrasi',       cat: 'Sekali Bayar',          name: 'Jasa Pindah Data & Setup',           price: 500000, oneTime: true, iconName: 'HardDrive', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', desc: 'Tim kami bantu masukkan semua menu & stok.' },
     ],
@@ -33,7 +33,7 @@ export const DEFAULT_PRICING = {
       { id: 'crm',           cat: 'Pelanggan Setia',       name: 'CRM & Poin Loyalitas',              price: 45000, iconName: 'Heart',     iconBg: 'bg-pink-100',   iconColor: 'text-pink-600',   desc: 'Sistem member VIP (misal: komunitas Vape/Pet).' },
       { id: 'keuangan',      cat: 'Karyawan & Laporan',    name: 'Dashboard Laba/Rugi Bersih',        price: 75000, iconName: 'PieChart',  iconBg: 'bg-blue-100',   iconColor: 'text-blue-600',   desc: 'Laporan Laba/Rugi bersih, bukan sekadar omzet.' },
       { id: 'payroll',       cat: 'Karyawan & Laporan',    name: 'Absensi Staf',                      price: 75000, iconName: 'UserCheck', iconBg: 'bg-emerald-100',iconColor: 'text-emerald-600',desc: 'Jam kerja, gaji, dan slip gaji digital.' },
-      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                price: 0, dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
+      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                 price: 75, priceType: 'percentage', dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
       { id: 'pager-fisik',   cat: 'Sekali Bayar',          name: 'Integrasi Scanner Barcode Bluetooth', price: 350000, oneTime: true, iconName: 'Zap', iconBg: 'bg-gray-100', iconColor: 'text-gray-600', desc: 'Scanner kasir wireless mempermudah input barang.' },
       { id: 'migrasi',       cat: 'Sekali Bayar',          name: 'Jasa Pindah Data & Setup',          price: 500000, oneTime: true, iconName: 'HardDrive', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', desc: 'Tim kami bantu masukkan semua stok & barcode.' },
     ],
@@ -52,40 +52,11 @@ export const DEFAULT_PRICING = {
       { id: 'keuangan',      cat: 'Karyawan & Laporan',    name: 'Dashboard Laba/Rugi Bersih',        price: 75000, iconName: 'PieChart',  iconBg: 'bg-blue-100',   iconColor: 'text-blue-600',   desc: 'Laporan Laba/Rugi bersih, bukan sekadar omzet.' },
       { id: 'crm',           cat: 'Pelanggan Setia',       name: 'CRM Pelanggan & Loyalty',           price: 45000, iconName: 'Heart',     iconBg: 'bg-pink-100',   iconColor: 'text-pink-600',   desc: 'Rekam riwayat perawatan/potongan, beri poin member.' },
       { id: 'stok-premium',  cat: 'Operasional',           name: 'Stok Premium (Ritel Salon)',        price: 35000, iconName: 'Package',   iconBg: 'bg-red-100',    iconColor: 'text-red-600',    desc: 'Bila menjual produk fisik (Pomade, Serum, Hair Tonic).' },
-      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                price: 0, dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
+      { id: 'extra-branch',  cat: 'Cabang Ekstra',         name: 'Tambah Cabang Baru',                 price: 75, priceType: 'percentage', dynamic: true, iconName: 'Building2', iconBg: 'bg-purple-100', iconColor: 'text-purple-600', desc: 'Cabang baru otomatis mewarisi semua fitur aktif.' },
       { id: 'migrasi',       cat: 'Sekali Bayar',          name: 'Jasa Pindah Data & Setup',          price: 500000, oneTime: true, iconName: 'HardDrive', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600', desc: 'Tim kami bantu masukkan semua layanan & staf.' },
     ],
     discount6m: 10, discount12m: 20,
     promoCodes: [] as { id: string; code: string; discount: number; isActive: boolean }[]
-  },
-  'iwash': {
-    title: 'LOKAL x Iwash',
-    basePrices: [
-      { id: '1', area: 'Starter', price: 150000 },
-      { id: '2', area: 'Pro', price: 250000 },
-      { id: '3', area: 'Enterprise', price: 500000 }
-    ],
-    addons: [] as any[], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'IWASHLOKAL', discount: 20, isActive: true }]
-  },
-  'valet-indonesia': {
-    title: 'LOKAL x ValetIndonesia',
-    basePrices: [
-      { id: '1', area: 'Harga Standar', price: 999000 },
-      { id: '2', area: 'Harga Promo', price: 299000 }
-    ],
-    addons: [] as any[], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'VALET2024', discount: 25, isActive: true }]
-  },
-  'brosurhub': {
-    title: 'LOKAL x BrosurHub',
-    basePrices: [
-      { id: '1', area: 'Basic (Per Tahun)', price: 59000 },
-      { id: '2', area: 'Standard (Per Tahun)', price: 119000 },
-      { id: '3', area: 'Premium (Per Tahun)', price: 169000 }
-    ],
-    addons: [] as any[], discount6m: 0, discount12m: 0,
-    promoCodes: [{ id: 'p1', code: 'BROSURDIGITAL', discount: 20, isActive: true }]
   },
   'jasa-landing-page': {
     title: 'LOKAL Web Studio',
@@ -100,16 +71,6 @@ export const DEFAULT_PRICING = {
       { id: 'dashboard', name: 'Web Performance Dashboard', price: 750000, type: 'yearly' },
       { id: 'extra-pages', name: 'Tambahan Halaman (Per Halaman)', price: 250000, type: 'flat' },
     ],
-    promoCodes: [] as { id: string; code: string; discount: number; isActive: boolean }[]
-  },
-  'wa-blast': {
-    title: 'WA Blasting',
-    basePrices: [
-      { id: '1', name: 'Blast Starter', price: 318000, kontak: 500, original: 435000, perNomor: '636', badge: 'PALING HEMAT' },
-      { id: '2', name: 'Blast Growth', price: 1390000, kontak: 2500, original: 1900000, perNomor: '556', badge: '' },
-      { id: '3', name: 'Blast Scale', price: 4760000, kontak: 10000, original: 6520000, perNomor: '476', badge: '' },
-    ],
-    addons: [] as any[],
     promoCodes: [] as { id: string; code: string; discount: number; isActive: boolean }[]
   }
 }

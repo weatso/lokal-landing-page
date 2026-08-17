@@ -3,45 +3,12 @@
 import { useState, useEffect } from 'react'
 import { ExternalLink, MessageCircle, ShieldCheck, Tag, Pointer, RefreshCcw, PenTool } from 'lucide-react'
 import Image from 'next/image'
-import PromoCodeInput from '@/components/PromoCodeInput'
-
-interface PromoCode  { id: string; code: string; discount: number; isActive: boolean }
-interface PricingData { basePrices: { id: string; area: string; price: number }[]; promoCodes: PromoCode[] }
-
-const DEFAULT: PricingData = {
-  basePrices:  [
-    { id: '1', area: 'Basic (Per Tahun)',    price: 257000 },
-    { id: '2', area: 'Standard (Per Tahun)', price: 735000 },
-  ],
-  promoCodes: [{ id: 'p1', code: 'BROSURDIGITAL', discount: 20, isActive: true }],
-}
-
-const fmt = (p: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(p)
 
 const CM = <svg width="8" height="6" viewBox="0 0 8 6" fill="none"><path d="M1 3l2 2 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
 
 export default function BrosurHubPage() {
-  const [pricing, setPricing]           = useState<PricingData>(DEFAULT)
-  const [promoDiscount, setPromoDiscount] = useState(0)
-  const [appliedPromo, setAppliedPromo]   = useState('')
-
-  useEffect(() => {
-    const saved = localStorage.getItem('lokal_pricing_data')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as Record<string, PricingData>
-        if (parsed['brosurhub']) {
-          const d = parsed['brosurhub']
-          if (!d.promoCodes) d.promoCodes = DEFAULT.promoCodes
-          setPricing(d)
-        }
-      } catch { /* use defaults */ }
-    }
-  }, [])
-
-  const handleConsultation = (paket = '') => {
-    const promoText = appliedPromo ? ` (Kode Promo: ${appliedPromo}, Diskon ${promoDiscount}%)` : ''
-    const msg = `Halo LOKAL, saya tertarik membuat brosur digital dengan ${paket || 'jasa BrosurHub'}${promoText}. Mohon info selengkapnya.`
+  const handleConsultation = () => {
+    const msg = `Halo LOKAL, saya tertarik membuat brosur digital dengan jasa BrosurHub. Mohon info selengkapnya.`
     window.open(`https://wa.me/6285111326098?text=${msg}`, '_blank')
   }
 
@@ -71,7 +38,7 @@ export default function BrosurHubPage() {
                 Masih cetak brosur 1.000 lembar tiap bulan? Stop dulu. Saatnya beralih ke brosur digital interaktif. Kamu isi form pesanan, tim kami yang buatkan sampai live!
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <a href="#pricing" className="bg-pink-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-pink-700 transition shadow-lg shadow-pink-600/30 flex items-center justify-center">Lihat Harga Promo</a>
+                <a href="#promo" className="bg-pink-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-pink-700 transition shadow-lg shadow-pink-600/30 flex items-center justify-center">Konsultasi Sekarang</a>
                 <a href="https://brosurhub.com/live-demo.php" target="_blank" rel="noopener noreferrer" className="bg-white text-pink-600 border-2 border-pink-100 px-8 py-4 rounded-xl font-bold hover:bg-pink-50 transition flex items-center justify-center">
                   Lihat Live Demo <ExternalLink size={16} className="ml-1" />
                 </a>
@@ -189,64 +156,7 @@ export default function BrosurHubPage() {
           </div>
         </section>
 
-        {/* Pricing */}
-        <section id="pricing" className="max-w-5xl mx-auto px-4 mb-16">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Paket Pembuatan Brosur</h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">Pilih paket pembuatan brosur digital interaktif untuk bisnis Anda.</p>
-          </div>
 
-          <div className="max-w-xl mx-auto mb-10">
-            <PromoCodeInput
-              promoCodes={pricing.promoCodes}
-                onApply={(promo) => { setPromoDiscount(promo.discount); setAppliedPromo(promo.code) }}
-              onClear={() => { setPromoDiscount(0); setAppliedPromo('') }}
-            />
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {/* Basic */}
-            <div className="bg-white rounded-3xl p-8 border border-gray-200 shadow-sm flex flex-col hover:border-pink-300 transition">
-              <h3 className="text-2xl font-black text-gray-800 mb-1">Basic</h3>
-              <div className="text-sm font-semibold text-pink-500 mb-3">brosurhub.com/namamu</div>
-              <p className="text-sm text-gray-500 mb-6">Paling pas untuk UMKM yang baru mulai go digital.</p>
-              <div className="mb-8">
-                {promoDiscount > 0 && <div className="text-sm text-gray-400 line-through mb-1">{fmt(257000)}</div>}
-                <div className={`text-4xl font-black ${promoDiscount > 0 ? 'text-green-600' : 'text-gray-900'}`}>{fmt(257000 * (1 - promoDiscount / 100))}</div>
-                <div className="text-sm text-gray-500 mt-1 font-medium">/ tahun (Bayar di Muka)</div>
-              </div>
-              <ul className="flex-1 space-y-3 mb-8">
-                {['Brosur digital interaktif', 'Bagikan lewat link & QR', 'Desain basic', 'Analitik dasar', 'Update konten kapan saja'].map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
-                    <div className="w-4 h-4 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center shrink-0 mt-0.5">{CM}</div>{f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => handleConsultation(`Paket Brosur Basic (${fmt(257000 * (1 - promoDiscount / 100))}/tahun)`)} className="w-full bg-pink-50 text-pink-600 py-3.5 rounded-xl font-bold hover:bg-pink-100 transition">Pilih Paket</button>
-            </div>
-
-            {/* Standard */}
-            <div className="bg-gray-900 rounded-3xl p-8 border border-gray-800 shadow-xl flex flex-col relative transform md:-translate-y-2">
-              <div className="absolute top-0 right-6 -translate-y-1/2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider">POPULAR</div>
-              <h3 className="text-2xl font-black text-white mb-1">Standard</h3>
-              <div className="text-sm font-semibold text-pink-400 mb-3">namamu.my.id</div>
-              <p className="text-sm text-gray-400 mb-6">Domain my.id personal untuk branding lebih profesional.</p>
-              <div className="mb-8">
-                {promoDiscount > 0 && <div className="text-sm text-gray-500 line-through mb-1">{fmt(735000)}</div>}
-                <div className={`text-4xl font-black ${promoDiscount > 0 ? 'text-green-400' : 'text-white'}`}>{fmt(735000 * (1 - promoDiscount / 100))}</div>
-                <div className="text-sm text-gray-500 mt-1 font-medium">/ tahun (Bayar di Muka)</div>
-              </div>
-              <ul className="flex-1 space-y-3 mb-8">
-                {['Domain .my.id', 'Semua fitur Basic', 'Desain basic+', 'Analitik lengkap', 'SSL included', 'Basic support'].map(f => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-gray-300">
-                    <div className="w-4 h-4 rounded-full bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0 mt-0.5">{CM}</div>{f}
-                  </li>
-                ))}
-              </ul>
-              <button onClick={() => handleConsultation(`Paket Brosur Standard (${fmt(735000 * (1 - promoDiscount / 100))}/tahun)`)} className="w-full bg-pink-500 text-white py-3.5 rounded-xl font-bold hover:bg-pink-600 transition shadow-lg shadow-pink-500/20">Pilih Paket</button>
-            </div>
-          </div>
-        </section>
 
         {/* Promo Bridge */}
         <section id="promo" className="max-w-4xl mx-auto px-4 mb-16">

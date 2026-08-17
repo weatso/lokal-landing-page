@@ -12,11 +12,9 @@ import {
 
 const PRODUCTS = [
   { key: 'pos-fnb',          label: 'LOKAL POS F&B',        icon: ShoppingBag,    color: 'text-emerald-500' },
-  { key: 'jasa-landing-page',label: 'Web Studio',            icon: Globe,          color: 'text-blue-500'    },
-  { key: 'iwash',            label: 'iWash',                 icon: Smartphone,     color: 'text-cyan-500'    },
-  { key: 'valet-indonesia',  label: 'Valet Indonesia',       icon: Car,            color: 'text-purple-500'  },
-  { key: 'brosurhub',        label: 'BrosurHub',             icon: FileText,       color: 'text-orange-500'  },
-  { key: 'wa-blast',         label: 'WA Blast',              icon: MessageSquare,  color: 'text-green-500'   },
+  { key: 'pos-retail',       label: 'LOKAL POS Retail',     icon: ShoppingBag,    color: 'text-blue-500'    },
+  { key: 'pos-beauty',       label: 'LOKAL POS Beauty',     icon: ShoppingBag,    color: 'text-pink-500'    },
+  { key: 'jasa-landing-page',label: 'Web Studio',           icon: Globe,          color: 'text-purple-500'  },
 ]
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
